@@ -1,8 +1,9 @@
 package com.and1ss.onlinechat.services.user;
 
+import com.and1ss.onlinechat.exceptions.InternalServerException;
 import com.and1ss.onlinechat.exceptions.InvalidLoginCredentialsException;
 import com.and1ss.onlinechat.exceptions.InvalidRegisterDataException;
-import com.and1ss.onlinechat.services.UnauthorizedException;
+import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.services.user.model.AccessToken;
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import com.and1ss.onlinechat.services.user.model.LoginInfo;
@@ -13,6 +14,8 @@ import com.and1ss.onlinechat.services.user.repos.AccountInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+
+import java.security.NoSuchAlgorithmException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -39,7 +42,14 @@ public class UserServiceImpl implements UserService {
         AccountInfo userInfo =
                 accountInfoRepository.findAccountInfoByLogin(credentials.getLogin());
 
-        if (userInfo == null || !userInfo.getPasswordHash().equals(credentials.getPassword())) {
+        String passwordHash;
+        try {
+            passwordHash = passwordHasher.hashPassword(credentials.getPassword());
+        } catch (NoSuchAlgorithmException e) {
+            throw new InternalServerException();
+        }
+
+        if (userInfo == null || !userInfo.getPasswordHash().equals(passwordHash)) {
             throw new InvalidLoginCredentialsException();
         }
 
