@@ -1,10 +1,7 @@
 package com.and1ss.onlinechat.services.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
@@ -23,19 +20,21 @@ import java.util.UUID;
 public class AccountInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id ;
+    @JsonIgnore
+    private UUID id;
 
+    @NonNull
     private String name;
+    @NonNull
     private String surname;
-
-    @JsonIgnore
+    @NonNull
     private String login;
-
-    @JsonIgnore
+    @NonNull
     @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(name = "created_at")
     @Generated(GenerationTime.INSERT)
+    @JsonIgnore
     private Timestamp createdAt;
 }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
-@Repository
+@Repository("account_info")
 public interface AccountInfoRepository extends JpaRepository<AccountInfo, UUID> {
-
+    AccountInfo findAccountInfoByLogin(String login);
 }

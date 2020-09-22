@@ -1,14 +1,10 @@
 package com.and1ss.onlinechat.services.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
-import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -24,14 +20,14 @@ import java.util.UUID;
 public class AccessToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonIgnore
     private UUID id;
 
-    @NotNull
+    @Generated(GenerationTime.INSERT)
     private String token;
 
-    @NotNull
+    @NonNull
     @JsonIgnore
+    @Column(name = "user_id")
     private UUID userId;
 
     @Column(name = "created_at")

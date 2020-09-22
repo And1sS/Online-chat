@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS account_info(
 
 CREATE TABLE IF NOT EXISTS access_token(
     id UUID DEFAULT uuid_generate_v4(),
-    token TEXT NOT NULL,
+    token UUID DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
 

@@ -20,14 +20,10 @@ repositories {
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
 
-
     implementation "org.postgresql:postgresql:9.4-1206-jdbc42"
-
-    implementation "org.jetbrains.kotlin:kotlin-reflect"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "joda-time:joda-time:2.10.6"
 
     compileOnly 'org.projectlombok:lombok'
 
