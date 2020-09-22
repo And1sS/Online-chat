@@ -10,5 +10,10 @@ import java.util.UUID;
 @Repository("access_token")
 public interface AccessTokenRepository extends JpaRepository<AccessToken, UUID> {
     AccessToken findAccessTokenByUserId(UUID userId);
-    AccessToken findAccessTokenByToken(String token);
+
+//    @Query(
+//            value = "SELECT * FROM access_token WHERE token=:token",
+//            nativeQuery = true
+//    )
+    AccessToken findAccessTokenByToken(UUID token);
 }

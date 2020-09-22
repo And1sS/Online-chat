@@ -7,13 +7,14 @@ import lombok.Data;
 import lombok.NonNull;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 public class AccessTokenDTO {
     @NonNull
     @JsonProperty("access_token")
-    private final String accessToken;
+    private final UUID accessToken;
 
     @NonNull
     @JsonProperty("created_at")

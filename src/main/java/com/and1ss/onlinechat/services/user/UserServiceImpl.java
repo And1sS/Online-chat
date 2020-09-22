@@ -1,9 +1,6 @@
 package com.and1ss.onlinechat.services.user;
 
-import com.and1ss.onlinechat.exceptions.InternalServerException;
-import com.and1ss.onlinechat.exceptions.InvalidLoginCredentialsException;
-import com.and1ss.onlinechat.exceptions.InvalidRegisterDataException;
-import com.and1ss.onlinechat.exceptions.UnauthorizedException;
+import com.and1ss.onlinechat.exceptions.*;
 import com.and1ss.onlinechat.services.user.model.AccessToken;
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import com.and1ss.onlinechat.services.user.model.LoginInfo;
@@ -16,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -62,16 +60,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AccountInfo authorizeUserByAccessToken(String accessToken) {
+        UUID parsedToken;
+        try {
+            parsedToken = UUID.fromString(accessToken);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid access token format");
+        }
+
         AccessToken userAccessToken =
-                accessTokenRepository.findAccessTokenByToken(accessToken);
-        if (accessToken == null) {
+                accessTokenRepository.findAccessTokenByToken(parsedToken);
+        if (userAccessToken == null) {
             throw new UnauthorizedException("Access token in invalid");
         }
+
         AccountInfo authorizedUser =
                 accountInfoRepository.findAccountInfoById(userAccessToken.getUserId());
         if (authorizedUser == null) {
             throw new UnauthorizedException("Access token in invalid");
         }
+
         return authorizedUser;
     }
 

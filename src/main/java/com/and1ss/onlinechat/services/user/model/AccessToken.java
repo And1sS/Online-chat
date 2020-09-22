@@ -23,7 +23,7 @@ public class AccessToken {
     private UUID id;
 
     @Generated(GenerationTime.INSERT)
-    private String token;
+    private UUID token;
 
     @NonNull
     @Column(name = "user_id")
