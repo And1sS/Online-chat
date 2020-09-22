@@ -1,10 +1,10 @@
-package com.and1ss.onlinechat.services.user.dto;
+package com.and1ss.onlinechat.services.user.model;
 
 import lombok.*;
 
 @Data
 @AllArgsConstructor
-public class LoginInfoDTO {
+public class LoginInfo {
     @NonNull
     @Setter(AccessLevel.NONE)
     private final String login;

@@ -9,4 +9,5 @@ import java.util.UUID;
 @Repository("account_info")
 public interface AccountInfoRepository extends JpaRepository<AccountInfo, UUID> {
     AccountInfo findAccountInfoByLogin(String login);
+    AccountInfo findAccountInfoById(UUID id);
 }

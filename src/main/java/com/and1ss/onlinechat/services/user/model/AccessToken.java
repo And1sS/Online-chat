@@ -26,7 +26,6 @@ public class AccessToken {
     private String token;
 
     @NonNull
-    @JsonIgnore
     @Column(name = "user_id")
     private UUID userId;
 

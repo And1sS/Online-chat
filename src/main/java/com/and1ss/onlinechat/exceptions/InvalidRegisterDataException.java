@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.services.user.errors;
+package com.and1ss.onlinechat.exceptions;
 
 public class InvalidRegisterDataException extends RuntimeException {
     public InvalidRegisterDataException(String message) {

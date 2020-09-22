@@ -1,5 +1,6 @@
 package com.and1ss.onlinechat.services.user.model;
 
+import com.and1ss.onlinechat.services.user.password_hasher.PasswordHasher;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -20,21 +21,29 @@ import java.util.UUID;
 public class AccountInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonIgnore
     private UUID id;
 
     @NonNull
     private String name;
+
     @NonNull
     private String surname;
+
     @NonNull
     private String login;
+
     @NonNull
     @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(name = "created_at")
     @Generated(GenerationTime.INSERT)
-    @JsonIgnore
     private Timestamp createdAt;
+
+    public AccountInfo(RegisterInfo registerInfo, PasswordHasher hasher) {
+        name = registerInfo.getName();
+        surname = registerInfo.getSurname();
+        login = registerInfo.getLogin();
+        passwordHash = hasher.hashPassword(registerInfo.getPassword());
+    }
 }
