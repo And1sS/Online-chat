@@ -44,7 +44,9 @@ CREATE TABLE IF NOT EXISTS group_message(
     CONSTRAINT user_id_constraint FOREIGN KEY (author_id) REFERENCES account_info (id) ON DELETE SET NULL
 );
 
+
 CREATE TYPE MemberType AS ENUM ('read', 'readwrite', 'admin');
+CREATE CAST (character varying AS MemberType) WITH INOUT AS ASSIGNMENT;
 
 CREATE TABLE IF NOT EXISTS group_user(
     group_chat_id UUID NOT NULL,    

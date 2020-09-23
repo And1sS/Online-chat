@@ -1,7 +1,6 @@
 package com.and1ss.onlinechat.services.chat.repos;
 
-import com.and1ss.onlinechat.services.chat.model.PrivateChat;
-import com.and1ss.onlinechat.services.user.model.AccessToken;
+import com.and1ss.onlinechat.services.chat.model.private_chat.PrivateChat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

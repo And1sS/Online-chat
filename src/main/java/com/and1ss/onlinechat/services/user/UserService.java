@@ -5,6 +5,7 @@ import com.and1ss.onlinechat.services.user.model.AccessToken;
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import com.and1ss.onlinechat.services.user.model.RegisterInfo;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
@@ -13,4 +14,5 @@ public interface UserService {
         AccountInfo authorizeUserByAccessToken(String accessToken);
         AccountInfo findUserByLogin(String login);
         AccountInfo findUserById(UUID id);
+        List<AccountInfo> findUsersByListOfIds(List<UUID> ids);
 }

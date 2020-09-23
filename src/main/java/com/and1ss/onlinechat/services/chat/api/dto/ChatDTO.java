@@ -18,6 +18,9 @@ public class ChatDTO {
     @JsonProperty("type")
     private final String type;
 
+    private final String title;
+    private final String about;
+
     @NonNull
     @JsonProperty("users")
     private final List<UUID> users;

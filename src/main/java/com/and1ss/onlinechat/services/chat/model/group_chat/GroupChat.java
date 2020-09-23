@@ -1,15 +1,17 @@
-package com.and1ss.onlinechat.services.chat.model;
+package com.and1ss.onlinechat.services.chat.model.group_chat;
 
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Entity
 @Table(name = "group_chat")
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @DynamicInsert
 public class GroupChat {

@@ -3,7 +3,8 @@ package com.and1ss.onlinechat.services.chat.api.controllers;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.services.chat.ChatService;
 import com.and1ss.onlinechat.services.chat.api.dto.ChatDTO;
-import com.and1ss.onlinechat.services.chat.model.PrivateChat;
+import com.and1ss.onlinechat.services.chat.model.group_chat.GroupChat;
+import com.and1ss.onlinechat.services.chat.model.private_chat.PrivateChat;
 import com.and1ss.onlinechat.services.chat.repos.PrivateChatRepository;
 import com.and1ss.onlinechat.services.user.UserService;
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/chat")
-public class PrivateChatController {
+public class ChatController {
     @Autowired
     UserService userService;
 
@@ -34,8 +35,11 @@ public class PrivateChatController {
 
         switch (chat.getType()) {
             case ChatDTO.CHAT_PRIVATE: {
-                System.out.println(author);
                 handleCreatePrivateChat(chat, author);
+                break;
+            }
+            case ChatDTO.CHAT_GROUP: {
+                handleCreateGroupChat(chat, author);
                 break;
             }
             default:
@@ -56,6 +60,19 @@ public class PrivateChatController {
         }
 
         return chatService.createPrivateChat(new PrivateChat(user1, user2), author);
+    }
+
+    private GroupChat handleCreateGroupChat(ChatDTO chat, AccountInfo author) {
+        List<UUID> usersIds = chat.getUsers();
+        List<AccountInfo> participants = userService.findUsersByListOfIds(usersIds);
+
+        GroupChat toBeCreated = GroupChat.builder()
+                .title(chat.getTitle())
+                .about(chat.getAbout())
+                .creator(author)
+                .build();
+
+        return chatService.createGroupChat(toBeCreated, participants, author);
     }
 
     @Autowired

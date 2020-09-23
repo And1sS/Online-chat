@@ -2,17 +2,15 @@ package com.and1ss.onlinechat.services.user.model;
 
 import com.and1ss.onlinechat.exceptions.InternalServerException;
 import com.and1ss.onlinechat.services.user.password_hasher.PasswordHasher;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
-import org.springframework.web.client.HttpServerErrorException;
 
 import javax.persistence.*;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Builder

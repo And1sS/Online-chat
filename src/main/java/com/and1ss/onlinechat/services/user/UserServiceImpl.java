@@ -13,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -94,5 +95,10 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("Invalid user id");
         }
         return info;
+    }
+
+    @Override
+    public List<AccountInfo> findUsersByListOfIds(List<UUID> ids) {
+        return accountInfoRepository.findAllByIdIn(ids);
     }
 }
