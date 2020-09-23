@@ -86,4 +86,13 @@ public class UserServiceImpl implements UserService {
     public AccountInfo findUserByLogin(String login) {
         throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
+
+    @Override
+    public AccountInfo findUserById(UUID id) {
+        AccountInfo info = accountInfoRepository.findAccountInfoById(id);
+        if (info == null) {
+            throw new BadRequestException("Invalid user id");
+        }
+        return info;
+    }
 }
