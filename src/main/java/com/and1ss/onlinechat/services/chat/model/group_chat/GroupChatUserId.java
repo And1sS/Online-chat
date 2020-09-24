@@ -13,7 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
-public class GroupChatUserJoinId implements Serializable {
+public class GroupChatUserId implements Serializable {
     @Column(columnDefinition = "group_chat_id")
     private UUID groupChatId;
 

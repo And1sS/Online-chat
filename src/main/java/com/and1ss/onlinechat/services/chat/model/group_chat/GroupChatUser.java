@@ -10,11 +10,11 @@ import javax.persistence.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupChatUserJoin {
+public class GroupChatUser {
     public enum MemberType { read, readwrite, admin }
 
     @EmbeddedId
-    GroupChatUserJoinId id;
+    GroupChatUserId id;
 
     @NonNull
     @Column(name = "member_type")

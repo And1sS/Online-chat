@@ -2,7 +2,9 @@ package com.and1ss.onlinechat.services.chat.api.controllers;
 
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.services.chat.ChatService;
-import com.and1ss.onlinechat.services.chat.api.dto.ChatDTO;
+import com.and1ss.onlinechat.services.chat.api.dto.ChatFullDTO;
+import com.and1ss.onlinechat.services.chat.api.dto.ChatShortDTO;
+import com.and1ss.onlinechat.services.chat.api.dto.ChatType;
 import com.and1ss.onlinechat.services.chat.model.group_chat.GroupChat;
 import com.and1ss.onlinechat.services.chat.model.private_chat.PrivateChat;
 import com.and1ss.onlinechat.services.chat.repos.PrivateChatRepository;
@@ -11,8 +13,10 @@ import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/chat")
@@ -23,9 +27,8 @@ public class ChatController {
     @Autowired
     ChatService chatService;
 
-    //TODO: Rewrite this to return ChatDTO object
-    @PostMapping("/create")
-    public void createChat(@RequestBody ChatDTO chat, @RequestHeader("Authorization") String token) {
+    @PostMapping
+    public void createChat(@RequestBody ChatFullDTO chat, @RequestHeader("Authorization") String token) {
         String parsedAccessToken = token.replaceFirst("Bearer\\s", "");
         AccountInfo author = userService.authorizeUserByAccessToken(parsedAccessToken);
 
@@ -33,21 +36,37 @@ public class ChatController {
             throw new BadRequestException("Chats must have at least two members");
         }
 
-        switch (chat.getType()) {
-            case ChatDTO.CHAT_PRIVATE: {
-                handleCreatePrivateChat(chat, author);
-                break;
-            }
-            case ChatDTO.CHAT_GROUP: {
-                handleCreateGroupChat(chat, author);
-                break;
-            }
-            default:
-                throw new BadRequestException("Chats must have either private or group type");
+        if (chat.getType().equals(ChatType.CHAT_PRIVATE)) {
+            handleCreatePrivateChat(chat, author);
+        } else if (chat.getType().equals(ChatType.CHAT_GROUP)) {
+            handleCreateGroupChat(chat, author);
+        } else {
+            throw new BadRequestException("Chats must have either private or group type");
         }
     }
 
-    private PrivateChat handleCreatePrivateChat(ChatDTO chat, AccountInfo author) {
+    @GetMapping("/{id}")
+    public ChatFullDTO getChatById(
+            @PathVariable("id") UUID id,
+            @RequestHeader("Authorization") String token
+    ) {
+        String parsedAccessToken = token.replaceFirst("Bearer\\s", "");
+        AccountInfo author = userService.authorizeUserByAccessToken(parsedAccessToken);
+
+        try {
+            return new ChatFullDTO(chatService.getPrivateChatById(id, author));
+        } catch (Exception e) {}
+
+        try {
+            GroupChat groupChat = chatService.getGroupChatById(id, author);
+            List<AccountInfo> participants = chatService.getGroupChatMembers(groupChat, author);
+            return new ChatFullDTO(groupChat, participants);
+        } catch (Exception e) {}
+
+        throw new BadRequestException("Invalid chat id");
+    }
+
+    private PrivateChat handleCreatePrivateChat(ChatFullDTO chat, AccountInfo author) {
         List<UUID> usersIds = chat.getUsers();
         if (usersIds.size() > 2) {
             throw new BadRequestException("Private chats can only have two members");
@@ -62,7 +81,7 @@ public class ChatController {
         return chatService.createPrivateChat(new PrivateChat(user1, user2), author);
     }
 
-    private GroupChat handleCreateGroupChat(ChatDTO chat, AccountInfo author) {
+    private GroupChat handleCreateGroupChat(ChatFullDTO chat, AccountInfo author) {
         List<UUID> usersIds = chat.getUsers();
         List<AccountInfo> participants = userService.findUsersByListOfIds(usersIds);
 
@@ -75,18 +94,37 @@ public class ChatController {
         return chatService.createGroupChat(toBeCreated, participants, author);
     }
 
-    @Autowired
-    PrivateChatRepository privateChatRepository;
+    @GetMapping("/all")
+    public List<ChatShortDTO> getAllChats(@RequestHeader("Authorization") String token) {
+        String parsedAccessToken = token.replaceFirst("Bearer\\s", "");
+        AccountInfo user = userService.authorizeUserByAccessToken(parsedAccessToken);
 
-    @GetMapping("/{id}")
-    public PrivateChat getPrivateChatById(@PathVariable("id") UUID id) {
-        //return privateChatRepository.findPrivateChatById(id);
-        return null;
+        List<ChatShortDTO> allChats = new ArrayList();
+        allChats.addAll(getAllGroupChatsDTO(user));
+        allChats.addAll(getAllPrivateChatsDTO(user));
+
+        return allChats;
     }
 
-    @GetMapping
-    public List<PrivateChat> getAllPrivateChats() {
-        return privateChatRepository.findAll();
+    private List<ChatShortDTO> getAllPrivateChatsDTO(AccountInfo user) {
+        return chatService.getAllPrivateChatsForUser(user)
+                .stream()
+                .map(privateChat ->
+                        new ChatShortDTO(
+                                ChatType.CHAT_PRIVATE,
+                                privateChat.getId()
+                        )
+                ).collect(Collectors.toList());
     }
 
+    private List<ChatShortDTO> getAllGroupChatsDTO(AccountInfo user) {
+        return chatService.getAllGroupChatsForUser(user)
+                .stream()
+                .map(groupChat ->
+                        new ChatShortDTO(
+                                ChatType.CHAT_GROUP,
+                                groupChat.getId()
+                        )
+                ).collect(Collectors.toList());
+    }
 }
