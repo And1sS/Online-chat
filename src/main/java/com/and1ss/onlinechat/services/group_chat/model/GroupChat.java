@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.services.chat.model.group_chat;
+package com.and1ss.onlinechat.services.group_chat.model;
 
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import lombok.*;

@@ -1,18 +1,15 @@
-package com.and1ss.onlinechat.services.chat;
+package com.and1ss.onlinechat.services.group_chat;
 
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.exceptions.UnimplementedException;
-import com.and1ss.onlinechat.services.chat.model.group_chat.GroupChat;
-import com.and1ss.onlinechat.services.chat.model.group_chat.GroupChatUser;
-import com.and1ss.onlinechat.services.chat.model.group_chat.GroupChatUserId;
-import com.and1ss.onlinechat.services.chat.model.private_chat.PrivateChat;
-import com.and1ss.onlinechat.services.chat.repos.GroupChatRepository;
-import com.and1ss.onlinechat.services.chat.repos.GroupChatUserRepository;
-import com.and1ss.onlinechat.services.chat.repos.PrivateChatRepository;
+import com.and1ss.onlinechat.services.group_chat.model.GroupChat;
+import com.and1ss.onlinechat.services.group_chat.model.GroupChatUser;
+import com.and1ss.onlinechat.services.group_chat.model.GroupChatUserId;
+import com.and1ss.onlinechat.services.group_chat.repos.GroupChatRepository;
+import com.and1ss.onlinechat.services.group_chat.repos.GroupChatUserRepository;
 import com.and1ss.onlinechat.services.user.UserService;
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
-import com.and1ss.onlinechat.services.chat.model.group_chat.GroupChatUser.MemberType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +19,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class ChatServiceImpl implements ChatService {
-    @Autowired
-    private PrivateChatRepository privateChatRepository;
-
+public class GroupChatServiceImpl implements GroupChatService {
     @Autowired
     private GroupChatRepository groupChatRepository;
 
@@ -34,53 +28,6 @@ public class ChatServiceImpl implements ChatService {
 
     @Autowired
     private UserService userService;
-
-    @Override
-    public PrivateChat createPrivateChat(PrivateChat chat, AccountInfo author) {
-        if (!chat.getUser1().equals(author) && !chat.getUser2().equals(author)) {
-            throw new UnauthorizedException("This user can't create this chat");
-        }
-
-        PrivateChat privateChat;
-        try {
-            privateChat = privateChatRepository.save(chat);
-        } catch (Exception e) {
-            throw new BadRequestException("This chat is already present");
-        }
-
-        return privateChat;
-    }
-
-    @Override
-    public PrivateChat getPrivateChatById(UUID id, AccountInfo author) {
-        PrivateChat chat;
-        try {
-            chat = privateChatRepository.getOne(id);
-        } catch (Exception e) {
-            throw new UnauthorizedException("This user is not allowed to view this chat");
-        }
-
-        if (!userMemberOfPrivateChat(chat, author)) {
-            throw new UnauthorizedException("This user is not allowed to view this chat");
-        }
-
-        return chat;
-    }
-
-    @Override
-    public List<PrivateChat> getAllPrivateChatsForUser(AccountInfo user) {
-        return privateChatRepository.findPrivateChatsByUserId(user.getId());
-    }
-
-    @Override
-    public List<PrivateChat> getPrivateChatsPageForUser(AccountInfo user) {
-        throw new UnimplementedException();
-    }
-
-    @Override
-    public boolean userMemberOfPrivateChat(PrivateChat chat, AccountInfo author) {
-        return chat.getUser1().equals(author) || chat.getUser2().equals(author);
-    }
 
     @Override
     public GroupChat createGroupChat(
@@ -162,7 +109,7 @@ public class ChatServiceImpl implements ChatService {
             );
 
             GroupChatUser join = GroupChatUser.builder()
-                    .memberType(MemberType.readwrite)
+                    .memberType(GroupChatUser.MemberType.readwrite)
                     .id(compositeId)
                     .build();
 
@@ -192,9 +139,9 @@ public class ChatServiceImpl implements ChatService {
         Set<GroupChatUser> allUsersJoin = toBeAdded.stream()
                 .filter(user -> !userMemberOfGroupChat(chat, user))
                 .map(user -> {
-                    MemberType memberType = MemberType.readwrite;
+                    GroupChatUser.MemberType memberType = GroupChatUser.MemberType.readwrite;
                     if (user.equals(author)) {
-                        memberType = MemberType.admin;
+                        memberType = GroupChatUser.MemberType.admin;
                     }
 
                     return GroupChatUser.builder()
@@ -214,7 +161,7 @@ public class ChatServiceImpl implements ChatService {
                 .findByGroupChatIdAndUserId(chat.getId(), author.getId());
 
         if (!userMemberOfGroupChat(chat, author) &&
-                authorJoin.getMemberType() != MemberType.admin) {
+                authorJoin.getMemberType() != GroupChatUser.MemberType.admin) {
             throw new UnauthorizedException("This user cannot delete members of this chat");
         }
 
@@ -230,7 +177,7 @@ public class ChatServiceImpl implements ChatService {
             GroupChat chat,
             AccountInfo author,
             AccountInfo member,
-            MemberType newMemberType
+            GroupChatUser.MemberType newMemberType
     ) {
         throw new UnimplementedException();
     }

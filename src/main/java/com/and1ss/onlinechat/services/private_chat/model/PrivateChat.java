@@ -1,8 +1,7 @@
-package com.and1ss.onlinechat.services.chat.model.private_chat;
+package com.and1ss.onlinechat.services.private_chat.model;
 
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import lombok.*;
-import org.apache.tomcat.jni.Address;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;

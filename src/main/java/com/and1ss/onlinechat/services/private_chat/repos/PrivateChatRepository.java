@@ -1,7 +1,6 @@
-package com.and1ss.onlinechat.services.chat.repos;
+package com.and1ss.onlinechat.services.private_chat.repos;
 
-import com.and1ss.onlinechat.services.chat.model.private_chat.PrivateChat;
-import com.and1ss.onlinechat.services.user.model.AccountInfo;
+import com.and1ss.onlinechat.services.private_chat.model.PrivateChat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
