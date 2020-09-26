@@ -10,8 +10,6 @@ import java.util.UUID;
 
 @Repository("private_chat")
 public interface PrivateChatRepository extends JpaRepository<PrivateChat, UUID> {
-    PrivateChat findPrivateChatById(UUID id);
-
     @Query(
             value = "SELECT * FROM private_chat WHERE " +
             "user_1_id=:id OR user_2_id=:id",

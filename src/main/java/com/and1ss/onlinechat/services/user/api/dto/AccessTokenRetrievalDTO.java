@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Data
 @AllArgsConstructor
-public class AccessTokenDTO {
+public class AccessTokenRetrievalDTO {
     @NonNull
     @JsonProperty("access_token")
     private final UUID accessToken;
@@ -20,7 +20,7 @@ public class AccessTokenDTO {
     @JsonProperty("created_at")
     private final Timestamp createdAt;
 
-    public AccessTokenDTO(AccessToken accessToken) {
+    public AccessTokenRetrievalDTO(AccessToken accessToken) {
         this.accessToken = accessToken.getToken();
         createdAt = accessToken.getCreatedAt();
     }

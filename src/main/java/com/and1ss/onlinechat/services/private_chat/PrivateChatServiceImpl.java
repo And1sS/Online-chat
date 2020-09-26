@@ -2,7 +2,6 @@ package com.and1ss.onlinechat.services.private_chat;
 
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
-import com.and1ss.onlinechat.exceptions.UnimplementedException;
 import com.and1ss.onlinechat.services.private_chat.model.PrivateChat;
 import com.and1ss.onlinechat.services.private_chat.repos.PrivateChatRepository;
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
@@ -57,7 +56,7 @@ public class PrivateChatServiceImpl implements PrivateChatService {
 
     @Override
     public List<PrivateChat> getPrivateChatsPageForUser(AccountInfo user) {
-        throw new UnimplementedException();
+        throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
 
     @Override

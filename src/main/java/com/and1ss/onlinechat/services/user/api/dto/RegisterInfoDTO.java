@@ -16,28 +16,14 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 @Data
-public class AccountInfoDTO {
-    @NonNull
-    private final UUID id;
-
+@AllArgsConstructor
+public class RegisterInfoDTO {
     @NonNull
     private final String name;
-
     @NonNull
     private final String surname;
-
     @NonNull
     private final String login;
-
     @NonNull
-    @JsonProperty("created_at")
-    private final Timestamp createdAt;
-
-    public AccountInfoDTO(AccountInfo accountInfo) {
-        id = accountInfo.getId();
-        name = accountInfo.getName();
-        surname = accountInfo.getSurname();
-        login = accountInfo.getLogin();
-        createdAt = accountInfo.getCreatedAt();
-    }
+    private final String password;
 }

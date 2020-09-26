@@ -26,6 +26,7 @@ public class GroupChat {
     private String about;
 
     @NonNull
+    @Setter(AccessLevel.NONE)
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "creator_id", referencedColumnName = "id")
     private AccountInfo creator;

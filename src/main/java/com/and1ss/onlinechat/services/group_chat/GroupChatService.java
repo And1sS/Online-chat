@@ -10,6 +10,7 @@ import java.util.UUID;
 public interface GroupChatService {
     GroupChat createGroupChat(GroupChat chat, List<AccountInfo> participants, AccountInfo author);
     GroupChat getGroupChatById(UUID id, AccountInfo author);
+    void patchGroupChat(GroupChat chat, AccountInfo autor);
 
     void addUser(GroupChat chat, AccountInfo author, AccountInfo toBeAdded);
     void addUsers(GroupChat chat, AccountInfo author, List<AccountInfo> toBeAdded);
@@ -21,6 +22,7 @@ public interface GroupChatService {
             GroupChatUser.MemberType newMemberType
     );
     boolean userMemberOfGroupChat(GroupChat chat, AccountInfo author);
+    GroupChatUser.MemberType getUserMemberType(GroupChat chat, AccountInfo author);
     List<AccountInfo> getGroupChatMembers(GroupChat chat, AccountInfo author);
 
     List<GroupChat> getAllGroupChatsForUser(AccountInfo user);

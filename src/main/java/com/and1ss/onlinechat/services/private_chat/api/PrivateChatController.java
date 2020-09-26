@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/chats/group")
+@RequestMapping("/chats/private")
 public class PrivateChatController {
     @Autowired
     PrivateChatService privateChatService;

@@ -2,7 +2,6 @@ package com.and1ss.onlinechat.services.group_chat;
 
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
-import com.and1ss.onlinechat.exceptions.UnimplementedException;
 import com.and1ss.onlinechat.services.group_chat.model.GroupChat;
 import com.and1ss.onlinechat.services.group_chat.model.GroupChatUser;
 import com.and1ss.onlinechat.services.group_chat.model.GroupChatUserId;
@@ -40,7 +39,7 @@ public class GroupChatServiceImpl implements GroupChatService {
         }
 
         if (!participants.contains(author)) {
-            throw new BadRequestException("Creator should also be a participant");
+            participants.add(author);
         }
 
         GroupChat createdChat;
@@ -57,9 +56,29 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     @Override
     public boolean userMemberOfGroupChat(GroupChat chat, AccountInfo user) {
-        GroupChatUser join = groupChatUserJoinRepository
+        return getGroupChatUserJoin(chat, user) != null;
+    }
+
+    @Override
+    public GroupChatUser.MemberType getUserMemberType(GroupChat chat, AccountInfo user) {
+        GroupChatUser join = getGroupChatUserJoin(chat, user);
+
+        if (join == null) {
+            throw new BadRequestException("This user is not member of this chat");
+        }
+
+        return join.getMemberType();
+    }
+
+    private boolean userAdminOrCreator(GroupChat chat, AccountInfo user) {
+        return chat.getCreator().equals(user) ||
+                (getGroupChatUserJoin(chat, user).getMemberType()
+                        == GroupChatUser.MemberType.admin);
+    }
+
+    private GroupChatUser getGroupChatUserJoin(GroupChat chat, AccountInfo user) {
+        return groupChatUserJoinRepository
                 .findByGroupChatIdAndUserId(chat.getId(), user.getId());
-        return join != null;
     }
 
     @Override
@@ -76,8 +95,7 @@ public class GroupChatServiceImpl implements GroupChatService {
     }
 
     @Override
-    public GroupChat getGroupChatById(UUID id, AccountInfo author)
-    {
+    public GroupChat getGroupChatById(UUID id, AccountInfo author) {
         GroupChat chat;
         try {
             chat = groupChatRepository.getOne(id);
@@ -90,6 +108,15 @@ public class GroupChatServiceImpl implements GroupChatService {
         }
 
         return chat;
+    }
+
+    @Override
+    public void patchGroupChat(GroupChat chat, AccountInfo author) {
+        if (!userAdminOrCreator(chat, author)) {
+            throw new UnauthorizedException("This user can not patch this chat");
+        }
+
+        groupChatRepository.save(chat);
     }
 
     @Override
@@ -114,6 +141,8 @@ public class GroupChatServiceImpl implements GroupChatService {
                     .build();
 
             groupChatUserJoinRepository.save(join);
+        } else {
+            throw new BadRequestException("This user is already member of this chat");
         }
     }
 
@@ -130,7 +159,8 @@ public class GroupChatServiceImpl implements GroupChatService {
         uncheckedAddUsers(chat, author, toBeAdded);
     }
 
-    // utility function to add users after all checks
+    // TODO: Now, this method assumes that author is chat creator
+    // Fix this
     private void uncheckedAddUsers(
             GroupChat chat,
             AccountInfo author,
@@ -155,13 +185,10 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     @Override
     public void deleteUser(GroupChat chat, AccountInfo author, AccountInfo toBeDeleted) {
-        GroupChatUser authorJoin = groupChatUserJoinRepository
-                .findByGroupChatIdAndUserId(chat.getId(), author.getId());
-        GroupChatUser toBeDeletedJoin = groupChatUserJoinRepository
-                .findByGroupChatIdAndUserId(chat.getId(), author.getId());
+        GroupChatUser authorJoin = getGroupChatUserJoin(chat, author);
+        GroupChatUser toBeDeletedJoin = getGroupChatUserJoin(chat, toBeDeleted);
 
-        if (!userMemberOfGroupChat(chat, author) &&
-                authorJoin.getMemberType() != GroupChatUser.MemberType.admin) {
+        if (!userAdminOrCreator(chat, author)) {
             throw new UnauthorizedException("This user cannot delete members of this chat");
         }
 
@@ -179,7 +206,7 @@ public class GroupChatServiceImpl implements GroupChatService {
             AccountInfo member,
             GroupChatUser.MemberType newMemberType
     ) {
-        throw new UnimplementedException();
+        throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
 
     @Override
@@ -193,6 +220,6 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     @Override
     public List<GroupChat> getGroupChatsPageForUser(AccountInfo user) {
-        throw new UnimplementedException();
+        throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
 }
