@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthenticationController {
 
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
-    public AuthenticationController(UserService service) {}
+    public AuthenticationController(UserService service) {
+        userService = service;
+    }
 
     @PostMapping("/register")
     private AccountInfoRetrievalDTO

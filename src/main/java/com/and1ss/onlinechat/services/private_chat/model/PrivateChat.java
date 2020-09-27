@@ -8,6 +8,7 @@ import javax.persistence.*;
 import java.util.UUID;
 
 @Data
+@Builder
 @Entity
 @Table(name = "private_chat")
 @RequiredArgsConstructor

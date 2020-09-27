@@ -76,13 +76,14 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
     private boolean userCanDeleteMessage(GroupChat groupChat, GroupMessage message, AccountInfo user) {
         GroupChatUser.MemberType memberType;
         try {
-             memberType = groupChatService.getUserMemberType(groupChat, user);
+            memberType = groupChatService.getUserMemberType(groupChat, user);
         } catch (BadRequestException e) {
             return false;
         }
 
         return memberType == GroupChatUser.MemberType.admin ||
-                groupChat.getCreator().equals(user);
+                groupChat.getCreator().equals(user) ||
+                message.getAuthor().equals(user);
     }
 
     @Override
