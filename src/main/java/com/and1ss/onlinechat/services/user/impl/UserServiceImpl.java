@@ -1,13 +1,14 @@
-package com.and1ss.onlinechat.services.user;
+package com.and1ss.onlinechat.services.user.impl;
 
 import com.and1ss.onlinechat.exceptions.*;
+import com.and1ss.onlinechat.services.user.UserService;
 import com.and1ss.onlinechat.services.user.model.AccessToken;
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import com.and1ss.onlinechat.services.user.model.LoginInfo;
 import com.and1ss.onlinechat.services.user.model.RegisterInfo;
-import com.and1ss.onlinechat.services.user.password_hasher.PasswordHasher;
-import com.and1ss.onlinechat.services.user.repos.AccessTokenRepository;
-import com.and1ss.onlinechat.services.user.repos.AccountInfoRepository;
+import com.and1ss.onlinechat.services.user.impl.password_hasher.PasswordHasher;
+import com.and1ss.onlinechat.services.user.impl.repos.AccessTokenRepository;
+import com.and1ss.onlinechat.services.user.impl.repos.AccountInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;

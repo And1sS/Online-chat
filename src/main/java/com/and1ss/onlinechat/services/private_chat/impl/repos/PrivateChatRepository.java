@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.services.private_chat.repos;
+package com.and1ss.onlinechat.services.private_chat.impl.repos;
 
 import com.and1ss.onlinechat.services.private_chat.model.PrivateChat;
 import org.springframework.data.jpa.repository.JpaRepository;

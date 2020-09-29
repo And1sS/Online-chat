@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.services.user.repos;
+package com.and1ss.onlinechat.services.user.impl.repos;
 
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import org.springframework.data.jpa.repository.JpaRepository;

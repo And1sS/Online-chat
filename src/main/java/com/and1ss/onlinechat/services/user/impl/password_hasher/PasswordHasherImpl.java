@@ -1,8 +1,6 @@
-package com.and1ss.onlinechat.services.user.password_hasher;
+package com.and1ss.onlinechat.services.user.impl.password_hasher;
 
-import com.and1ss.onlinechat.services.user.password_hasher.PasswordHasher;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;

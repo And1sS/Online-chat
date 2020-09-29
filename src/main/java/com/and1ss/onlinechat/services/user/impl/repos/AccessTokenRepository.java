@@ -1,8 +1,7 @@
-package com.and1ss.onlinechat.services.user.repos;
+package com.and1ss.onlinechat.services.user.impl.repos;
 
 import com.and1ss.onlinechat.services.user.model.AccessToken;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;

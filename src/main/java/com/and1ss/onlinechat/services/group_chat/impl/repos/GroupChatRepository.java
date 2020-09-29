@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.services.group_chat.repos;
+package com.and1ss.onlinechat.services.group_chat.impl.repos;
 
 import com.and1ss.onlinechat.services.group_chat.model.GroupChat;
 import org.springframework.data.jpa.repository.JpaRepository;

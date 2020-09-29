@@ -1,12 +1,13 @@
-package com.and1ss.onlinechat.services.group_chat;
+package com.and1ss.onlinechat.services.group_chat.impl;
 
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.services.group_chat.GroupChatMessageService;
+import com.and1ss.onlinechat.services.group_chat.GroupChatService;
 import com.and1ss.onlinechat.services.group_chat.model.GroupChat;
 import com.and1ss.onlinechat.services.group_chat.model.GroupChatUser;
 import com.and1ss.onlinechat.services.group_chat.model.GroupMessage;
-import com.and1ss.onlinechat.services.group_chat.repos.GroupMessageRepository;
+import com.and1ss.onlinechat.services.group_chat.impl.repos.GroupMessageRepository;
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

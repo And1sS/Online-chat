@@ -1,10 +1,12 @@
-package com.and1ss.onlinechat.services.private_chat;
+package com.and1ss.onlinechat.services.private_chat.impl;
 
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
+import com.and1ss.onlinechat.services.private_chat.PrivateChatMessageService;
+import com.and1ss.onlinechat.services.private_chat.PrivateChatService;
 import com.and1ss.onlinechat.services.private_chat.model.PrivateChat;
 import com.and1ss.onlinechat.services.private_chat.model.PrivateMessage;
-import com.and1ss.onlinechat.services.private_chat.repos.PrivateChatMessageRepository;
+import com.and1ss.onlinechat.services.private_chat.impl.repos.PrivateChatMessageRepository;
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
 package com.and1ss.onlinechat.services.user.model;
 
 import com.and1ss.onlinechat.exceptions.InternalServerException;
-import com.and1ss.onlinechat.services.user.password_hasher.PasswordHasher;
+import com.and1ss.onlinechat.services.user.impl.password_hasher.PasswordHasher;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Generated;

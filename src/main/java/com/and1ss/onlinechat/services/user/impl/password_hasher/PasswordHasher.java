@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.services.user.password_hasher;
+package com.and1ss.onlinechat.services.user.impl.password_hasher;
 
 import java.security.NoSuchAlgorithmException;
 
