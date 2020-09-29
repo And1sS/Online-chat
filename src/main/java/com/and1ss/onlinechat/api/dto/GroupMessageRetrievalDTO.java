@@ -1,6 +1,6 @@
 package com.and1ss.onlinechat.api.dto;
 
-import com.and1ss.onlinechat.services.group_chat.model.GroupMessage;
+import com.and1ss.onlinechat.services.model.GroupMessage;
 import lombok.*;
 
 import java.sql.Timestamp;

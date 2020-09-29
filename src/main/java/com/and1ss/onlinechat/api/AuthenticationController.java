@@ -1,10 +1,10 @@
 package com.and1ss.onlinechat.api;
 
-import com.and1ss.onlinechat.services.user.UserService;
+import com.and1ss.onlinechat.services.UserService;
 import com.and1ss.onlinechat.api.dto.AccessTokenRetrievalDTO;
 import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.services.user.model.LoginInfo;
-import com.and1ss.onlinechat.services.user.model.RegisterInfo;
+import com.and1ss.onlinechat.services.model.LoginInfo;
+import com.and1ss.onlinechat.services.model.RegisterInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

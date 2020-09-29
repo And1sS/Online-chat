@@ -2,16 +2,16 @@ package com.and1ss.onlinechat.api;
 
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.api.dto.GroupMessageCreationDTO;
-import com.and1ss.onlinechat.services.private_chat.PrivateChatMessageService;
-import com.and1ss.onlinechat.services.private_chat.PrivateChatService;
+import com.and1ss.onlinechat.services.PrivateChatMessageService;
+import com.and1ss.onlinechat.services.PrivateChatService;
 import com.and1ss.onlinechat.api.dto.PrivateChatCreationDTO;
 import com.and1ss.onlinechat.api.dto.PrivateChatRetrievalDTO;
 import com.and1ss.onlinechat.api.dto.PrivateMessageCreationDTO;
 import com.and1ss.onlinechat.api.dto.PrivateMessageRetrievalDTO;
-import com.and1ss.onlinechat.services.private_chat.model.PrivateChat;
-import com.and1ss.onlinechat.services.private_chat.model.PrivateMessage;
-import com.and1ss.onlinechat.services.user.UserService;
-import com.and1ss.onlinechat.services.user.model.AccountInfo;
+import com.and1ss.onlinechat.services.model.PrivateChat;
+import com.and1ss.onlinechat.services.model.PrivateMessage;
+import com.and1ss.onlinechat.services.UserService;
+import com.and1ss.onlinechat.services.model.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,7 +1,7 @@
 package com.and1ss.onlinechat.api.dto;
 
-import com.and1ss.onlinechat.services.group_chat.model.GroupChat;
-import com.and1ss.onlinechat.services.user.model.AccountInfo;
+import com.and1ss.onlinechat.services.model.GroupChat;
+import com.and1ss.onlinechat.services.model.AccountInfo;
 import lombok.*;
 
 import java.util.List;

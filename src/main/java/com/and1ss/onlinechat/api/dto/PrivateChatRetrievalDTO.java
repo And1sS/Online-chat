@@ -1,6 +1,6 @@
 package com.and1ss.onlinechat.api.dto;
 
-import com.and1ss.onlinechat.services.private_chat.model.PrivateChat;
+import com.and1ss.onlinechat.services.model.PrivateChat;
 import lombok.*;
 
 import java.util.UUID;

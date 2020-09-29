@@ -2,12 +2,12 @@ package com.and1ss.onlinechat.api;
 
 import com.and1ss.onlinechat.api.dto.*;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
-import com.and1ss.onlinechat.services.group_chat.GroupChatMessageService;
-import com.and1ss.onlinechat.services.group_chat.GroupChatService;
-import com.and1ss.onlinechat.services.group_chat.model.GroupChat;
-import com.and1ss.onlinechat.services.group_chat.model.GroupMessage;
-import com.and1ss.onlinechat.services.user.UserService;
-import com.and1ss.onlinechat.services.user.model.AccountInfo;
+import com.and1ss.onlinechat.services.GroupChatMessageService;
+import com.and1ss.onlinechat.services.GroupChatService;
+import com.and1ss.onlinechat.services.model.GroupChat;
+import com.and1ss.onlinechat.services.model.GroupMessage;
+import com.and1ss.onlinechat.services.UserService;
+import com.and1ss.onlinechat.services.model.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

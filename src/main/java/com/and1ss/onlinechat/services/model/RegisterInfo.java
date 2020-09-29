@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.api.dto;
+package com.and1ss.onlinechat.services.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.NonNull;
 
 @Data
 @AllArgsConstructor
-public class RegisterInfoDTO {
+public class RegisterInfo {
     @NonNull
     private final String name;
     @NonNull
