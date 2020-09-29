@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.services.private_chat.api.dto;
+package com.and1ss.onlinechat.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +8,7 @@ import lombok.NonNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PrivateMessageCreationDTO {
+public class GroupMessageCreationDTO {
     @NonNull
     private String contents;
 }

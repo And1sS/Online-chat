@@ -1,9 +1,9 @@
-package com.and1ss.onlinechat.services.group_chat.api;
+package com.and1ss.onlinechat.api;
 
+import com.and1ss.onlinechat.api.dto.*;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.services.group_chat.GroupChatMessageService;
 import com.and1ss.onlinechat.services.group_chat.GroupChatService;
-import com.and1ss.onlinechat.services.group_chat.api.dto.*;
 import com.and1ss.onlinechat.services.group_chat.model.GroupChat;
 import com.and1ss.onlinechat.services.group_chat.model.GroupMessage;
 import com.and1ss.onlinechat.services.user.UserService;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RestController

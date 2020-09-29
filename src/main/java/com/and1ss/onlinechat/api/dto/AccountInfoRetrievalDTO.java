@@ -1,9 +1,8 @@
-package com.and1ss.onlinechat.services.user.api.dto;
+package com.and1ss.onlinechat.api.dto;
 
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import lombok.*;
 
-import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;

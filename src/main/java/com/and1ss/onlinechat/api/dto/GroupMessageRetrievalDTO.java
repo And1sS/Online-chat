@@ -1,13 +1,8 @@
-package com.and1ss.onlinechat.services.group_chat.api.dto;
+package com.and1ss.onlinechat.api.dto;
 
 import com.and1ss.onlinechat.services.group_chat.model.GroupMessage;
-import com.and1ss.onlinechat.services.user.api.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.services.user.model.AccountInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.hibernate.annotations.GenerationTime;
 
-import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.UUID;
 

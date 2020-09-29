@@ -1,17 +1,13 @@
-package com.and1ss.onlinechat.services.private_chat.api;
+package com.and1ss.onlinechat.api;
 
 import com.and1ss.onlinechat.exceptions.BadRequestException;
-import com.and1ss.onlinechat.services.group_chat.api.dto.GroupChatRetrievalDTO;
-import com.and1ss.onlinechat.services.group_chat.api.dto.GroupMessageCreationDTO;
-import com.and1ss.onlinechat.services.group_chat.api.dto.GroupMessageRetrievalDTO;
-import com.and1ss.onlinechat.services.group_chat.model.GroupChat;
-import com.and1ss.onlinechat.services.group_chat.model.GroupMessage;
+import com.and1ss.onlinechat.api.dto.GroupMessageCreationDTO;
 import com.and1ss.onlinechat.services.private_chat.PrivateChatMessageService;
 import com.and1ss.onlinechat.services.private_chat.PrivateChatService;
-import com.and1ss.onlinechat.services.private_chat.api.dto.PrivateChatCreationDTO;
-import com.and1ss.onlinechat.services.private_chat.api.dto.PrivateChatRetrievalDTO;
-import com.and1ss.onlinechat.services.private_chat.api.dto.PrivateMessageCreationDTO;
-import com.and1ss.onlinechat.services.private_chat.api.dto.PrivateMessageRetrievalDTO;
+import com.and1ss.onlinechat.api.dto.PrivateChatCreationDTO;
+import com.and1ss.onlinechat.api.dto.PrivateChatRetrievalDTO;
+import com.and1ss.onlinechat.api.dto.PrivateMessageCreationDTO;
+import com.and1ss.onlinechat.api.dto.PrivateMessageRetrievalDTO;
 import com.and1ss.onlinechat.services.private_chat.model.PrivateChat;
 import com.and1ss.onlinechat.services.private_chat.model.PrivateMessage;
 import com.and1ss.onlinechat.services.user.UserService;

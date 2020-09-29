@@ -1,14 +1,9 @@
-package com.and1ss.onlinechat.services.private_chat.api.dto;
+package com.and1ss.onlinechat.api.dto;
 
-import com.and1ss.onlinechat.services.group_chat.model.GroupChat;
 import com.and1ss.onlinechat.services.private_chat.model.PrivateChat;
-import com.and1ss.onlinechat.services.user.api.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import lombok.*;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -29,6 +24,7 @@ public class PrivateChatRetrievalDTO {
                 AccountInfoRetrievalDTO.fromAccountInfo(privateChat.getUser2());
 
         return PrivateChatRetrievalDTO.builder()
+                .id(privateChat.getId())
                 .user1(user1)
                 .user2(user2)
                 .build();

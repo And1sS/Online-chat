@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.services.private_chat.api.dto;
+package com.and1ss.onlinechat.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

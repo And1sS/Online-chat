@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.services.user.api.dto;
+package com.and1ss.onlinechat.api.dto;
 
 import com.and1ss.onlinechat.services.user.model.AccountInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -11,7 +11,8 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(name = "private_chat")
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @DynamicInsert
 public class PrivateChat {
     @Id
