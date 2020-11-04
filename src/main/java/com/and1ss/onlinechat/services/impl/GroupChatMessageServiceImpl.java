@@ -29,7 +29,7 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
             throw new UnauthorizedException("This user can not view messages of this chat");
         }
 
-        return groupMessageRepository.getGroupMessagesByChatId(groupChat.getId());
+        return groupChat.getMessages();
     }
 
     @Override

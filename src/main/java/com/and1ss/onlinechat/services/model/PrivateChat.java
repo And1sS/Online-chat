@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -27,6 +28,9 @@ public class PrivateChat {
     @JoinColumn(name = "user_2_id", referencedColumnName = "id")
     private AccountInfo user2;
 
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
+    private List<PrivateMessage> messages;
+    
     public PrivateChat(AccountInfo user1, AccountInfo user2) {
         this.user1 = user1;
         this.user2 = user2;

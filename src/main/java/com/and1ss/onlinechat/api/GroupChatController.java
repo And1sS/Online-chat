@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/chats/group")
+@RequestMapping("/api/group-chat-service/chats")
 public class GroupChatController {
     @Autowired
     GroupChatService groupChatService;
@@ -150,7 +150,7 @@ public class GroupChatController {
         GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
         GroupMessage message = GroupMessage.builder()
                 .author(authorizedUser)
-                .chatId(chatId)
+                .chat(groupChat)
                 .contents(messageCreationDTO.getContents())
                 .build();
 
@@ -172,7 +172,7 @@ public class GroupChatController {
         GroupMessage message = GroupMessage.builder()
                 .id(messageId)
                 .author(authorizedUser)
-                .chatId(chatId)
+                .chat(groupChat)
                 .contents(messageCreationDTO.getContents())
                 .build();
 

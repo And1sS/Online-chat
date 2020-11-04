@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
         }
 
         AccessToken accessToken = AccessToken.builder()
-                .userId(userInfo.getId())
+                .user(userInfo)
                 .build();
 
         return accessTokenRepository.save(accessToken);
@@ -75,8 +75,7 @@ public class UserServiceImpl implements UserService {
             throw new UnauthorizedException("Access token in invalid");
         }
 
-        AccountInfo authorizedUser =
-                accountInfoRepository.findAccountInfoById(userAccessToken.getUserId());
+        AccountInfo authorizedUser = userAccessToken.getUser();
         if (authorizedUser == null) {
             throw new UnauthorizedException("Access token in invalid");
         }

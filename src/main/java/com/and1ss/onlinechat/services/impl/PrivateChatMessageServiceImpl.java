@@ -28,8 +28,7 @@ public class PrivateChatMessageServiceImpl implements PrivateChatMessageService 
             throw new UnauthorizedException("This user can not view messages of this chat");
         }
 
-        return privateChatMessageRepository
-                .getPrivateMessagesByChatId(privateChat.getId());
+        return privateChat.getMessages();
     }
 
     @Override
@@ -45,6 +44,8 @@ public class PrivateChatMessageServiceImpl implements PrivateChatMessageService 
         if (message.getContents().isEmpty()) {
             throw new BadRequestException("Message contents must not be empty");
         }
+        message.setAuthor(author);
+        message.setChat(privateChat);
 
         return privateChatMessageRepository.save(message);
     }

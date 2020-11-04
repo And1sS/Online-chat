@@ -20,7 +20,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/chats/private")
+@RequestMapping("api/private-chat-service/chats")
 public class PrivateChatController {
     @Autowired
     PrivateChatService privateChatService;
@@ -88,7 +88,7 @@ public class PrivateChatController {
 
         PrivateMessage message = PrivateMessage.builder()
                 .author(authorizedUser)
-                .chatId(chatId)
+                .chat(privateChat)
                 .contents(messageCreationDTO.getContents())
                 .build();
 
@@ -116,8 +116,8 @@ public class PrivateChatController {
     }
 
     @PatchMapping("/{chat_id}/messages/{message_id}")
-    public PrivateMessageRetrievalDTO patchMessageOfGroupChat(
-            @RequestBody GroupMessageCreationDTO messageCreationDTO,
+    public PrivateMessageRetrievalDTO patchMessageOfPrivateChat(
+            @RequestBody PrivateMessageCreationDTO messageCreationDTO,
             @PathVariable("chat_id") UUID chatId,
             @PathVariable("message_id") UUID messageId,
             @RequestHeader("Authorization") String token
@@ -129,7 +129,7 @@ public class PrivateChatController {
         PrivateMessage message = PrivateMessage.builder()
                 .id(messageId)
                 .author(authorizedUser)
-                .chatId(chatId)
+                .chat(privateChat)
                 .contents(messageCreationDTO.getContents())
                 .build();
 
@@ -140,7 +140,7 @@ public class PrivateChatController {
     }
 
     @DeleteMapping("/{chat_id}/messages/{message_id}")
-    public void patchMessageOfGroupChat(
+    public void patchMessageOfPrivateChat(
             @PathVariable("chat_id") UUID chatId,
             @PathVariable("message_id") UUID messageId,
             @RequestHeader("Authorization") String token

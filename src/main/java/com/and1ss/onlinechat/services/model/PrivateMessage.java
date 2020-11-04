@@ -29,8 +29,9 @@ public class PrivateMessage {
     private AccountInfo author;
 
     @JsonIgnore
-    @NonNull
-    private UUID chatId;
+    @ManyToOne
+    @JoinColumn(name = "chat_id", referencedColumnName = "id")
+    private PrivateChat chat;
 
     private String contents;
 

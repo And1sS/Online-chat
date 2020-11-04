@@ -29,4 +29,7 @@ public class GroupChat {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "creator_id", referencedColumnName = "id")
     private AccountInfo creator;
+
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
+    private List<GroupMessage> messages;
 }

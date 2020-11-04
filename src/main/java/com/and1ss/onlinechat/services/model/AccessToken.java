@@ -26,8 +26,9 @@ public class AccessToken {
     private UUID token;
 
     @NonNull
-    @Column(name = "user_id")
-    private UUID userId;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private AccountInfo user;
 
     @Column(name = "created_at")
     @Generated(GenerationTime.INSERT)

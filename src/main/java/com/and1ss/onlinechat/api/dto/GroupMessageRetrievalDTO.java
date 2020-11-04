@@ -30,7 +30,7 @@ public class GroupMessageRetrievalDTO {
         return builder()
                 .id(groupMessage.getId())
                 .author(authorDTO)
-                .chatId(groupMessage.getChatId())
+                .chatId(groupMessage.getChat().getId())
                 .contents(groupMessage.getContents())
                 .createdAt(groupMessage.getCreatedAt())
                 .build();

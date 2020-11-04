@@ -31,7 +31,9 @@ public class GroupMessage {
 
     @JsonIgnore
     @NonNull
-    private UUID chatId;
+    @ManyToOne
+    @JoinColumn(name = "chat_id", referencedColumnName = "id")
+    private GroupChat chat;
 
     private String contents;
 

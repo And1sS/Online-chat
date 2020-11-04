@@ -30,7 +30,7 @@ public class PrivateMessageRetrievalDTO {
         return builder()
                 .id(privateMessage.getId())
                 .author(authorDTO)
-                .chatId(privateMessage.getChatId())
+                .chatId(privateMessage.getChat().getId())
                 .contents(privateMessage.getContents())
                 .createdAt(privateMessage.getCreatedAt())
                 .build();
