@@ -2,31 +2,41 @@ package com.and1ss.onlinechat.services.impl;
 
 import com.and1ss.onlinechat.exceptions.*;
 import com.and1ss.onlinechat.services.UserService;
-import com.and1ss.onlinechat.services.model.AccessToken;
-import com.and1ss.onlinechat.services.model.AccountInfo;
-import com.and1ss.onlinechat.services.model.LoginInfo;
-import com.and1ss.onlinechat.services.model.RegisterInfo;
+import com.and1ss.onlinechat.domain.AccessToken;
+import com.and1ss.onlinechat.domain.AccountInfo;
+import com.and1ss.onlinechat.domain.LoginInfo;
+import com.and1ss.onlinechat.domain.RegisterInfo;
 import com.and1ss.onlinechat.services.impl.password_hasher.PasswordHasher;
-import com.and1ss.onlinechat.services.impl.repos.AccessTokenRepository;
-import com.and1ss.onlinechat.services.impl.repos.AccountInfoRepository;
+import com.and1ss.onlinechat.repositories.AccessTokenRepository;
+import com.and1ss.onlinechat.repositories.AccountInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @Autowired
+
     private AccountInfoRepository accountInfoRepository;
 
-    @Autowired
     private AccessTokenRepository accessTokenRepository;
 
-    @Autowired
     private PasswordHasher passwordHasher;
+
+    @Autowired
+    public UserServiceImpl(
+            AccountInfoRepository accountInfoRepository,
+            AccessTokenRepository accessTokenRepository,
+            PasswordHasher passwordHasher
+    ) {
+        this.accountInfoRepository = accountInfoRepository;
+        this.accessTokenRepository = accessTokenRepository;
+        this.passwordHasher = passwordHasher;
+    }
 
     @Override
     public AccountInfo registerUser(RegisterInfo registerInfo) {
@@ -81,6 +91,12 @@ public class UserServiceImpl implements UserService {
         }
 
         return authorizedUser;
+    }
+
+    @Override
+    public AccountInfo authorizeUserByBearerToken(String token) {
+        String parsedAccessToken = token.replaceFirst("Bearer\\s", "");
+        return authorizeUserByAccessToken(parsedAccessToken);
     }
 
     @Override

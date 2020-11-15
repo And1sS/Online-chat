@@ -3,20 +3,27 @@ package com.and1ss.onlinechat.services.impl;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.services.PrivateChatService;
-import com.and1ss.onlinechat.services.model.PrivateChat;
-import com.and1ss.onlinechat.services.impl.repos.PrivateChatRepository;
-import com.and1ss.onlinechat.services.model.AccountInfo;
+import com.and1ss.onlinechat.domain.PrivateChat;
+import com.and1ss.onlinechat.repositories.PrivateChatRepository;
+import com.and1ss.onlinechat.domain.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class PrivateChatServiceImpl implements PrivateChatService {
-    @Autowired
+
     private PrivateChatRepository privateChatRepository;
+
+    @Autowired
+    public PrivateChatServiceImpl(PrivateChatRepository privateChatRepository) {
+        this.privateChatRepository = privateChatRepository;
+    }
 
     @Override
     public PrivateChat createPrivateChat(PrivateChat chat, AccountInfo author) {

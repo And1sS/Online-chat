@@ -1,8 +1,8 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.services.model.GroupChat;
-import com.and1ss.onlinechat.services.model.GroupMessage;
-import com.and1ss.onlinechat.services.model.AccountInfo;
+import com.and1ss.onlinechat.domain.GroupChat;
+import com.and1ss.onlinechat.domain.GroupMessage;
+import com.and1ss.onlinechat.domain.AccountInfo;
 
 import java.util.List;
 import java.util.UUID;

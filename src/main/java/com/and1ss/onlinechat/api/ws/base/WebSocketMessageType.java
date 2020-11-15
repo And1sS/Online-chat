@@ -1,0 +1,6 @@
+package com.and1ss.onlinechat.api.ws.base;
+
+public enum WebSocketMessageType {
+    GROUP_MESSAGE_PATCH, GROUP_MESSAGE_CREATE, GROUP_MESSAGE_DELETE,
+    PRIVATE_MESSAGE_PATCH, PRIVATE_MESSAGE, PRIVATE_MESSAGE_DELETE
+}

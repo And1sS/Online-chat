@@ -4,24 +4,34 @@ import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.services.GroupChatMessageService;
 import com.and1ss.onlinechat.services.GroupChatService;
-import com.and1ss.onlinechat.services.model.GroupChat;
-import com.and1ss.onlinechat.services.model.GroupChatUser;
-import com.and1ss.onlinechat.services.model.GroupMessage;
-import com.and1ss.onlinechat.services.impl.repos.GroupMessageRepository;
-import com.and1ss.onlinechat.services.model.AccountInfo;
+import com.and1ss.onlinechat.domain.GroupChat;
+import com.and1ss.onlinechat.domain.GroupChatUser;
+import com.and1ss.onlinechat.domain.GroupMessage;
+import com.and1ss.onlinechat.repositories.GroupMessageRepository;
+import com.and1ss.onlinechat.domain.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class GroupChatMessageServiceImpl implements GroupChatMessageService {
-    @Autowired
+
     private GroupChatService groupChatService;
 
-    @Autowired
     private GroupMessageRepository groupMessageRepository;
+
+    @Autowired
+    public GroupChatMessageServiceImpl(
+            GroupChatService groupChatService,
+            GroupMessageRepository groupMessageRepository
+    ) {
+        this.groupChatService = groupChatService;
+        this.groupMessageRepository = groupMessageRepository;
+    }
 
     @Override
     public List<GroupMessage> getAllMessages(GroupChat groupChat, AccountInfo author) {

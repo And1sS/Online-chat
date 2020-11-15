@@ -1,8 +1,8 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.services.model.GroupChat;
-import com.and1ss.onlinechat.services.model.GroupChatUser;
-import com.and1ss.onlinechat.services.model.AccountInfo;
+import com.and1ss.onlinechat.domain.GroupChat;
+import com.and1ss.onlinechat.domain.GroupChatUser;
+import com.and1ss.onlinechat.domain.AccountInfo;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +24,7 @@ public interface GroupChatService {
     boolean userMemberOfGroupChat(GroupChat chat, AccountInfo author);
     GroupChatUser.MemberType getUserMemberType(GroupChat chat, AccountInfo author);
     List<AccountInfo> getGroupChatMembers(GroupChat chat, AccountInfo author);
+    List<UUID> getGroupChatMembersIds(GroupChat chat, AccountInfo author);
 
     List<GroupChat> getAllGroupChatsForUser(AccountInfo user);
     List<GroupChat> getGroupChatsPageForUser(AccountInfo user);

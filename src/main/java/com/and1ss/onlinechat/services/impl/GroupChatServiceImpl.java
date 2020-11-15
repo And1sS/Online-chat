@@ -3,31 +3,42 @@ package com.and1ss.onlinechat.services.impl;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.services.GroupChatService;
-import com.and1ss.onlinechat.services.model.GroupChat;
-import com.and1ss.onlinechat.services.model.GroupChatUser;
-import com.and1ss.onlinechat.services.model.GroupChatUserId;
-import com.and1ss.onlinechat.services.impl.repos.GroupChatRepository;
-import com.and1ss.onlinechat.services.impl.repos.GroupChatUserRepository;
+import com.and1ss.onlinechat.domain.GroupChat;
+import com.and1ss.onlinechat.domain.GroupChatUser;
+import com.and1ss.onlinechat.domain.GroupChatUserId;
+import com.and1ss.onlinechat.repositories.GroupChatRepository;
+import com.and1ss.onlinechat.repositories.GroupChatUserRepository;
 import com.and1ss.onlinechat.services.UserService;
-import com.and1ss.onlinechat.services.model.AccountInfo;
+import com.and1ss.onlinechat.domain.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class GroupChatServiceImpl implements GroupChatService {
-    @Autowired
+
     private GroupChatRepository groupChatRepository;
 
-    @Autowired
     private GroupChatUserRepository groupChatUserJoinRepository;
 
-    @Autowired
     private UserService userService;
+
+    @Autowired
+    public GroupChatServiceImpl(
+            GroupChatRepository groupChatRepository,
+            GroupChatUserRepository groupChatUserJoinRepository,
+            UserService userService
+    ) {
+        this.groupChatRepository = groupChatRepository;
+        this.groupChatUserJoinRepository = groupChatUserJoinRepository;
+        this.userService = userService;
+    }
 
     @Override
     public GroupChat createGroupChat(
@@ -93,6 +104,14 @@ public class GroupChatServiceImpl implements GroupChatService {
                 .collect(Collectors.toList());
 
         return userService.findUsersByListOfIds(usersIds);
+    }
+
+    @Override
+    public List<UUID> getGroupChatMembersIds(GroupChat chat, AccountInfo author) {
+        return getGroupChatMembers(chat, author)
+                .stream()
+                .map(AccountInfo::getId)
+                .collect(Collectors.toList());
     }
 
     @Override

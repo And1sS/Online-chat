@@ -1,7 +1,7 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.services.model.PrivateChat;
-import com.and1ss.onlinechat.services.model.AccountInfo;
+import com.and1ss.onlinechat.domain.PrivateChat;
+import com.and1ss.onlinechat.domain.AccountInfo;
 
 import java.util.List;
 import java.util.UUID;
