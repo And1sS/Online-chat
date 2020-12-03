@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +40,16 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
             throw new UnauthorizedException("This user can not view messages of this chat");
         }
 
-        return groupChat.getMessages();
+        return groupMessageRepository.getGroupMessagesByChatId(groupChat.getId());
+    }
+
+    @Override
+    public GroupMessage getLastMessage(GroupChat groupChat, AccountInfo author) {
+        if (!groupChatService.userMemberOfGroupChat(groupChat, author)) {
+            throw new UnauthorizedException("This user can not view messages of this chat");
+        }
+
+        return groupMessageRepository.getLastGroupMessage(groupChat.getId());
     }
 
     @Override

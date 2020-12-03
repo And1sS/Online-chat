@@ -1,12 +1,12 @@
-package com.and1ss.onlinechat.api.rest.controllers;
+package com.and1ss.onlinechat.api.rest;
 
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.services.PrivateChatMessageService;
 import com.and1ss.onlinechat.services.PrivateChatService;
-import com.and1ss.onlinechat.api.rest.dto.PrivateChatCreationDTO;
-import com.and1ss.onlinechat.api.rest.dto.PrivateChatRetrievalDTO;
-import com.and1ss.onlinechat.api.rest.dto.PrivateMessageCreationDTO;
-import com.and1ss.onlinechat.api.rest.dto.PrivateMessageRetrievalDTO;
+import com.and1ss.onlinechat.api.dto.PrivateChatCreationDTO;
+import com.and1ss.onlinechat.api.dto.PrivateChatRetrievalDTO;
+import com.and1ss.onlinechat.api.dto.PrivateMessageCreationDTO;
+import com.and1ss.onlinechat.api.dto.PrivateMessageRetrievalDTO;
 import com.and1ss.onlinechat.domain.PrivateChat;
 import com.and1ss.onlinechat.domain.PrivateMessage;
 import com.and1ss.onlinechat.services.UserService;
@@ -14,21 +14,32 @@ import com.and1ss.onlinechat.domain.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Transactional
 @RestController
 @RequestMapping("api/private-chat-service/chats")
 public class PrivateChatController {
-    @Autowired
+
     PrivateChatService privateChatService;
 
-    @Autowired
     PrivateChatMessageService privateChatMessageService;
 
-    @Autowired
     UserService userService;
+
+    @Autowired
+    public PrivateChatController(
+            PrivateChatService privateChatService,
+            PrivateChatMessageService privateChatMessageService,
+            UserService userService
+    ) {
+        this.privateChatService = privateChatService;
+        this.privateChatMessageService = privateChatMessageService;
+        this.userService = userService;
+    }
 
     @GetMapping("/all")
     public List<PrivateChatRetrievalDTO> getAllPrivateChats(@RequestHeader("Authorization") String token) {
@@ -97,7 +108,6 @@ public class PrivateChatController {
         return PrivateMessageRetrievalDTO.fromPrivateMessage(savedMessage);
     }
 
-
     @GetMapping("/{chat_id}/messages")
     public List<PrivateMessageRetrievalDTO> getPrivateChatMessages(
             @PathVariable("chat_id") UUID chatId,
@@ -139,7 +149,7 @@ public class PrivateChatController {
     }
 
     @DeleteMapping("/{chat_id}/messages/{message_id}")
-    public void patchMessageOfPrivateChat(
+    public void deleteMessageOfPrivateChat(
             @PathVariable("chat_id") UUID chatId,
             @PathVariable("message_id") UUID messageId,
             @RequestHeader("Authorization") String token

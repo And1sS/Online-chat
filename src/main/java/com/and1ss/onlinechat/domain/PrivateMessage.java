@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 
 import javax.persistence.*;
@@ -36,6 +37,6 @@ public class PrivateMessage {
     private String contents;
 
     @Column(name = "creation_time")
-    @org.hibernate.annotations.Generated(GenerationTime.INSERT)
+    @Generated(GenerationTime.INSERT)
     private Timestamp createdAt;
 }

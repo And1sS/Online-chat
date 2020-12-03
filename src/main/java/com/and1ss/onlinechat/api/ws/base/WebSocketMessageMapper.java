@@ -7,18 +7,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.BinaryMessage;
 
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.*;
+import java.text.SimpleDateFormat;
 
 @Service
 public class WebSocketMessageMapper {
     private static Charset charset = StandardCharsets.UTF_8;
-    private static CharsetEncoder encoder = charset.newEncoder();
     private static CharsetDecoder decoder = charset.newDecoder();
     private static ObjectMapper objectMapper = new ObjectMapper();
 
-    public static ByteBuffer stringToByteBuffer(String message) throws CharacterCodingException {
-        return encoder.encode(CharBuffer.wrap(message));
+    static {
+        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+    }
+
+    public static ByteBuffer stringToByteBuffer(String message) {
+        return charset.encode(message);
     }
 
     public static String byteBufferToString(ByteBuffer buffer) throws CharacterCodingException {
@@ -29,8 +32,7 @@ public class WebSocketMessageMapper {
     }
 
     public static <T> BinaryMessage webSocketMessageToBinaryMessage(WebSocketMessage<Object> message)
-            throws JsonProcessingException, CharacterCodingException {
-        final var messageAsString = objectMapper.writeValueAsString(message);
-        return new BinaryMessage(stringToByteBuffer(messageAsString));
+            throws JsonProcessingException {
+        return new BinaryMessage(stringToByteBuffer(objectMapper.writeValueAsString(message)));
     }
 }

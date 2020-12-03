@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public interface GroupChatMessageService {
     List<GroupMessage> getAllMessages(GroupChat groupChat, AccountInfo author);
+    GroupMessage getLastMessage(GroupChat groupChat, AccountInfo author);
     GroupMessage addMessage(GroupChat groupChat, GroupMessage message, AccountInfo author);
     GroupMessage patchMessage(GroupChat groupChat, GroupMessage message, AccountInfo author);
     GroupMessage getMessageById(UUID id);

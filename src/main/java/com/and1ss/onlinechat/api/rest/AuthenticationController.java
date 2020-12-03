@@ -1,8 +1,8 @@
-package com.and1ss.onlinechat.api.rest.controllers;
+package com.and1ss.onlinechat.api.rest;
 
 import com.and1ss.onlinechat.services.UserService;
-import com.and1ss.onlinechat.api.rest.dto.AccessTokenRetrievalDTO;
-import com.and1ss.onlinechat.api.rest.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.api.dto.AccessTokenRetrievalDTO;
+import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.domain.LoginInfo;
 import com.and1ss.onlinechat.domain.RegisterInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +26,13 @@ public class AuthenticationController {
                 .fromAccountInfo(userService.registerUser(registerInfo));
     }
 
-    @GetMapping("/login")
+    @PutMapping("/login")
     private AccessTokenRetrievalDTO loginUser(@RequestBody LoginInfo credentials) {
         return new AccessTokenRetrievalDTO(userService.loginUser(credentials));
+    }
+
+    @GetMapping("/account")
+    private AccountInfoRetrievalDTO getAccountInfo(@RequestHeader("Authorization") String token) {
+        return AccountInfoRetrievalDTO.fromAccountInfo(userService.authorizeUserByBearerToken(token));
     }
 }

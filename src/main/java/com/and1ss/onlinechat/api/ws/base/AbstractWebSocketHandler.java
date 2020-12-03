@@ -1,21 +1,11 @@
 package com.and1ss.onlinechat.api.ws.base;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,9 +19,11 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
 
+        log.info("Established connection with: " + session.getRemoteAddress());
+
         Object userIdAttribute = session.getAttributes().get("userId");
 
-        if (userIdAttribute == null || !(userIdAttribute instanceof String)) {
+        if (!(userIdAttribute instanceof String)) {
             session.close(CloseStatus.POLICY_VIOLATION);
             return;
         }
@@ -52,7 +44,7 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
     }
 
     private static void onUserSubscribe(WebSocketSession session, String userId) {
-        var userSessions = activeSessions.get(userId);
+        final var userSessions = activeSessions.get(userId);
 
         if (userSessions == null) {
             var list = new ArrayList<WebSocketSession>();
@@ -69,7 +61,9 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
     }
 
     private static void onUserDisconnect(WebSocketSession session, String userId) {
-        var userSessions = activeSessions.get(userId);
+        final var userSessions = activeSessions.get(userId);
+
+        log.info("Closed connection with: " + session.getRemoteAddress());
 
         assert (userSessions != null);
 
@@ -83,7 +77,7 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
     }
 
     private static void sendToAllUserSessions(String userId, BinaryMessage message) {
-        var userSessions = activeSessions.get(userId);
+        final var userSessions = activeSessions.get(userId);
         if (userSessions == null) {
             return;
         }

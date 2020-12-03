@@ -1,7 +1,8 @@
-package com.and1ss.onlinechat.api.rest.dto;
+package com.and1ss.onlinechat.api.dto;
 
 import com.and1ss.onlinechat.domain.GroupChat;
 import com.and1ss.onlinechat.domain.AccountInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.List;
@@ -26,9 +27,12 @@ public class GroupChatRetrievalDTO {
     @NonNull
     private List<AccountInfoRetrievalDTO> participants;
 
+    @JsonProperty("last_message")
+    private GroupMessageRetrievalDTO lastMessage;
     public static GroupChatRetrievalDTO fromGroupChat(
             GroupChat groupChat,
-            List<AccountInfo> participants
+            List<AccountInfo> participants,
+            GroupMessageRetrievalDTO lastMessage
     ) {
         List<AccountInfoRetrievalDTO> participantsRetrieval =
                 participants.stream()
@@ -44,6 +48,7 @@ public class GroupChatRetrievalDTO {
                 .about(groupChat.getAbout())
                 .creator(creatorDTO)
                 .participants(participantsRetrieval)
+                .lastMessage(lastMessage)
                 .build();
     }
 }

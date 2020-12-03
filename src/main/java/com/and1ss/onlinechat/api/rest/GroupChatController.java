@@ -1,6 +1,6 @@
-package com.and1ss.onlinechat.api.rest.controllers;
+package com.and1ss.onlinechat.api.rest;
 
-import com.and1ss.onlinechat.api.rest.dto.*;
+import com.and1ss.onlinechat.api.dto.*;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.services.GroupChatMessageService;
 import com.and1ss.onlinechat.services.GroupChatService;
@@ -11,10 +11,12 @@ import com.and1ss.onlinechat.domain.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Transactional
 @RestController
 @RequestMapping("/api/group-chat-service/chats")
 public class GroupChatController {
@@ -36,7 +38,6 @@ public class GroupChatController {
         this.userService = userService;
     }
 
-    @CrossOrigin
     @GetMapping("/all")
     public List<GroupChatRetrievalDTO>
     getAllGroupChats(@RequestHeader("Authorization") String token) {
@@ -44,6 +45,7 @@ public class GroupChatController {
 
         List<GroupChat> groupChats =
                 groupChatService.getAllGroupChatsForUser(authorizedUser);
+
         return groupChats.stream()
                 .map(groupChat ->
                         formGroupChatRetrievalDTOForAuthorizedUser(
@@ -53,7 +55,7 @@ public class GroupChatController {
                 ).collect(Collectors.toList());
     }
 
-    @CrossOrigin
+
     @GetMapping("/{chat_id}")
     public GroupChatRetrievalDTO getGroupChat(
             @PathVariable("chat_id") UUID chatId,
@@ -64,7 +66,6 @@ public class GroupChatController {
         return formGroupChatRetrievalDTOForAuthorizedUser(groupChat, authorizedUser);
     }
 
-    @CrossOrigin
     @PostMapping
     public GroupChatRetrievalDTO createGroupChat(
             @RequestBody GroupChatCreationDTO chatCreationDTO,
@@ -92,7 +93,6 @@ public class GroupChatController {
         return formGroupChatRetrievalDTOForAuthorizedUser(createdChat, authorizedUser);
     }
 
-    @CrossOrigin
     @PatchMapping("/{chat_id}")
     public void patchGroupChat(
             @RequestBody GroupChatPatchDTO chatPatchDTO,
@@ -114,7 +114,6 @@ public class GroupChatController {
         groupChatService.patchGroupChat(groupChat, authorizedUser);
     }
 
-    @CrossOrigin
     @PostMapping("/{chat_id}/users")
     public void addUserToGroupChat(
             @PathVariable("chat_id") UUID chatId,
@@ -127,7 +126,6 @@ public class GroupChatController {
         groupChatService.addUser(groupChat, authorizedUser, toBeAddedUser);
     }
 
-    @CrossOrigin
     @DeleteMapping("/{chat_id}/users/{user_id}")
     public void deleteUserFromGroupChat(
             @PathVariable("chat_id") UUID chatId,
@@ -140,7 +138,6 @@ public class GroupChatController {
         groupChatService.deleteUser(groupChat, authorizedUser, toBeDeletedUser);
     }
 
-    @CrossOrigin
     @GetMapping("/{chat_id}/messages")
     public List<GroupMessageRetrievalDTO> getGroupChatMessages(
             @PathVariable("chat_id") UUID chatId,
@@ -156,7 +153,6 @@ public class GroupChatController {
                 .collect(Collectors.toList());
     }
 
-    @CrossOrigin
     @PostMapping("/{chat_id}/messages")
     public GroupMessageRetrievalDTO addMessageToGroupChat(
             @RequestBody GroupMessageCreationDTO messageCreationDTO,
@@ -177,9 +173,8 @@ public class GroupChatController {
         return GroupMessageRetrievalDTO.fromGroupMessage(savedMessage);
     }
 
-    @CrossOrigin
     @PatchMapping("/{chat_id}/messages/{message_id}")
-    public GroupMessageRetrievalDTO patchMessageOfGroupChat(
+    public void patchMessageOfGroupChat(
             @RequestBody GroupMessageCreationDTO messageCreationDTO,
             @PathVariable("chat_id") UUID chatId,
             @PathVariable("message_id") UUID messageId,
@@ -194,15 +189,12 @@ public class GroupChatController {
                 .contents(messageCreationDTO.getContents())
                 .build();
 
-        GroupMessage savedMessage = groupChatMessageService
+         groupChatMessageService
                 .patchMessage(groupChat, message, authorizedUser);
-
-        return GroupMessageRetrievalDTO.fromGroupMessage(savedMessage);
     }
 
-    @CrossOrigin
     @DeleteMapping("/{chat_id}/messages/{message_id}")
-    public void patchMessageOfGroupChat(
+    public void deleteMessageOfGroupChat(
             @PathVariable("chat_id") UUID chatId,
             @PathVariable("message_id") UUID messageId,
             @RequestHeader("Authorization") String token
@@ -223,6 +215,12 @@ public class GroupChatController {
     ) {
         List<AccountInfo> participants =
                 groupChatService.getGroupChatMembers(groupChat, author);
-        return GroupChatRetrievalDTO.fromGroupChat(groupChat, participants);
+        var lastMessage = groupChatMessageService.getLastMessage(groupChat, author);
+
+        GroupMessageRetrievalDTO lastMessageDTO = null;
+        if (lastMessage != null) {
+            lastMessageDTO = GroupMessageRetrievalDTO.fromGroupMessage(lastMessage);
+        }
+        return GroupChatRetrievalDTO.fromGroupChat(groupChat, participants, lastMessageDTO);
     }
 }

@@ -2,6 +2,7 @@ package com.and1ss.onlinechat.api.ws.base;
 
 import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class HttpHandshakeInterceptor implements HandshakeInterceptor {
 
     private final UserService userService;
@@ -40,19 +42,24 @@ public class HttpHandshakeInterceptor implements HandshakeInterceptor {
                     .get("Authorization");
 
             if (authHeader == null) {
+                log.debug("Authorization header is null");
                 response.setStatusCode(HttpStatus.UNAUTHORIZED);
                 return false;
             }
 
-            String bearerAuthEncoded = String.join(" ", authHeader);
+            String authString = String.join(" ", authHeader).replaceAll("\\[]", "");
 
             try {
-                String encodedAccessToken = bearerAuthEncoded
-                        .replaceAll("\\[]", "")
-                        .replaceFirst("Basic\\s", "");
+                String decodedAccessToken;
+                if (authString.contains("Basic")) {
+                    String encodedAccessToken = authString.replaceFirst("Basic\\s", "");
 
-                byte[] decodedBytes = Base64.getDecoder().decode(encodedAccessToken);
-                String decodedAccessToken = new String(decodedBytes).replaceAll(":", "");
+                    byte[] decodedBytes = Base64.getDecoder().decode(encodedAccessToken);
+                    System.out.println(encodedAccessToken);
+                    decodedAccessToken = new String(decodedBytes).replaceAll(":", "");
+                } else {
+                    decodedAccessToken = authString.replaceFirst("Bearer\\s", "");
+                }
 
                 AccountInfo user = userService.authorizeUserByAccessToken(decodedAccessToken);
 
@@ -60,6 +67,7 @@ public class HttpHandshakeInterceptor implements HandshakeInterceptor {
                 attributes.put("sessionId", session.getId());
                 attributes.put("userId", user.getId().toString());
             } catch (Exception e) {
+                System.out.println(e.getMessage());
                 response.setStatusCode(HttpStatus.UNAUTHORIZED);
                 return false;
             }

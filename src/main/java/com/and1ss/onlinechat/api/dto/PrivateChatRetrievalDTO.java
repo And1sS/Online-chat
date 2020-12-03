@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.api.rest.dto;
+package com.and1ss.onlinechat.api.dto;
 
 import com.and1ss.onlinechat.domain.PrivateChat;
 import lombok.*;
