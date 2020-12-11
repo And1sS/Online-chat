@@ -37,6 +37,7 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
         if (status != CloseStatus.POLICY_VIOLATION) {
             try {
                 onUserDisconnect(session, (String) (session.getAttributes().get("userId")));
+                System.out.println("Reason : " + status.getReason() + " " + status.getCode());
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
@@ -96,4 +97,6 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
             }
         });
     }
+
+
 }

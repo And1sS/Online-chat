@@ -13,7 +13,6 @@ import com.and1ss.onlinechat.repositories.GroupChatRepository;
 import com.and1ss.onlinechat.repositories.GroupChatUserRepository;
 import com.and1ss.onlinechat.services.UserService;
 import com.and1ss.onlinechat.domain.AccountInfo;
-import com.and1ss.onlinechat.utils.DatabaseQueryHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +21,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
 import javax.transaction.Transactional;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -166,9 +163,7 @@ public class GroupChatServiceImpl implements GroupChatService {
 
         if (!userMemberOfGroupChat(chat, toBeAdded)) {
             GroupChatUserId compositeId = new GroupChatUserId(
-                    chat.getId(),
-                    toBeAdded.getId()
-            );
+                    chat.getId(), toBeAdded.getId());
 
             GroupChatUser join = GroupChatUser.builder()
                     .memberType(GroupChatUser.MemberType.readwrite)
@@ -220,7 +215,6 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     @Override
     public void deleteUser(GroupChat chat, AccountInfo author, AccountInfo toBeDeleted) {
-        GroupChatUser authorJoin = getGroupChatUserJoin(chat, author);
         GroupChatUser toBeDeletedJoin = getGroupChatUserJoin(chat, toBeDeleted);
 
         if (!userAdminOrCreator(chat, author)) {
@@ -279,7 +273,7 @@ public class GroupChatServiceImpl implements GroupChatService {
             ") last_group_message ON group_chat.id = last_group_message.chat_id " +
             "         LEFT OUTER JOIN account_info last_message_author ON last_message_author.id = last_group_message.author_id " +
             "WHERE group_chat.id IN ( " +
-            "    SELECT chat_id from group_user WHERE user_id = :user_id " +
+            "    SELECT group_chat_id from group_user WHERE user_id = :user_id " +
             ")";
     }
 
