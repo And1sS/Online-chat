@@ -1,5 +1,6 @@
 package com.and1ss.onlinechat.services;
 
+import com.and1ss.onlinechat.api.dto.GroupChatRetrievalDTO;
 import com.and1ss.onlinechat.domain.GroupChat;
 import com.and1ss.onlinechat.domain.GroupChatUser;
 import com.and1ss.onlinechat.domain.AccountInfo;
@@ -26,6 +27,6 @@ public interface GroupChatService {
     List<AccountInfo> getGroupChatMembers(GroupChat chat, AccountInfo author);
     List<UUID> getGroupChatMembersIds(GroupChat chat, AccountInfo author);
 
-    List<GroupChat> getAllGroupChatsForUser(AccountInfo user);
-    List<GroupChat> getGroupChatsPageForUser(AccountInfo user);
+    List<GroupChatRetrievalDTO> getAllGroupChatsForUserDTO(AccountInfo user);
+    List<GroupChatRetrievalDTO> getGroupChatsPageForUser(AccountInfo user);
 }

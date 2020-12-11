@@ -43,16 +43,7 @@ public class GroupChatController {
     getAllGroupChats(@RequestHeader("Authorization") String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
 
-        List<GroupChat> groupChats =
-                groupChatService.getAllGroupChatsForUser(authorizedUser);
-
-        return groupChats.stream()
-                .map(groupChat ->
-                        formGroupChatRetrievalDTOForAuthorizedUser(
-                                groupChat,
-                                authorizedUser
-                        )
-                ).collect(Collectors.toList());
+        return groupChatService.getAllGroupChatsForUserDTO(authorizedUser);
     }
 
 

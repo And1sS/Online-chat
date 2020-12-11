@@ -24,7 +24,6 @@ public class GroupChatRetrievalDTO {
 
     private AccountInfoRetrievalDTO creator;
 
-    @NonNull
     private List<AccountInfoRetrievalDTO> participants;
 
     @JsonProperty("last_message")
