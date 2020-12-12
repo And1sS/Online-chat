@@ -24,20 +24,12 @@ public class GroupChatRetrievalDTO {
 
     private AccountInfoRetrievalDTO creator;
 
-    private List<AccountInfoRetrievalDTO> participants;
-
     @JsonProperty("last_message")
     private GroupMessageRetrievalDTO lastMessage;
     public static GroupChatRetrievalDTO fromGroupChat(
             GroupChat groupChat,
-            List<AccountInfo> participants,
             GroupMessageRetrievalDTO lastMessage
     ) {
-        List<AccountInfoRetrievalDTO> participantsRetrieval =
-                participants.stream()
-                        .map(AccountInfoRetrievalDTO::fromAccountInfo)
-                        .collect(Collectors.toList());
-
         AccountInfoRetrievalDTO creatorDTO =
                 AccountInfoRetrievalDTO.fromAccountInfo(groupChat.getCreator());
 
@@ -46,7 +38,6 @@ public class GroupChatRetrievalDTO {
                 .id(groupChat.getId())
                 .about(groupChat.getAbout())
                 .creator(creatorDTO)
-                .participants(participantsRetrieval)
                 .lastMessage(lastMessage)
                 .build();
     }

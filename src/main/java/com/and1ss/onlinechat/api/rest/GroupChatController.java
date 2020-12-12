@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Transactional
 @RestController
 @RequestMapping("/api/group-chat-service/chats")
 public class GroupChatController {
@@ -41,20 +40,28 @@ public class GroupChatController {
     @GetMapping("/all")
     public List<GroupChatRetrievalDTO>
     getAllGroupChats(@RequestHeader("Authorization") String token) {
-        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-
-        return groupChatService.getAllGroupChatsForUserDTO(authorizedUser);
+        return getAllGroupChatsTransaction(token);
     }
 
+    @Transactional
+    public List<GroupChatRetrievalDTO> getAllGroupChatsTransaction(String token) {
+        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
+
+        return groupChatService.getAllGroupChatsDTOForUser(authorizedUser);
+    }
 
     @GetMapping("/{chat_id}")
     public GroupChatRetrievalDTO getGroupChat(
             @PathVariable("chat_id") UUID chatId,
             @RequestHeader("Authorization") String token
     ) {
-        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
-        return formGroupChatRetrievalDTOForAuthorizedUser(groupChat, authorizedUser);
+        return getGroupChatDTOTransaction(chatId, token);
+    }
+
+    @Transactional
+    public GroupChatRetrievalDTO getGroupChatDTOTransaction(UUID chatId, String token) {
+        final AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
+        return groupChatService.getGroupChatDTOById(chatId, authorizedUser);
     }
 
     @PostMapping
@@ -62,6 +69,12 @@ public class GroupChatController {
             @RequestBody GroupChatCreationDTO chatCreationDTO,
             @RequestHeader("Authorization") String token
     ) {
+        final GroupChat createdChat = createGroupChatTransaction(chatCreationDTO, token);
+        return GroupChatRetrievalDTO.fromGroupChat(createdChat, null);
+    }
+
+    @Transactional
+    public GroupChat createGroupChatTransaction(GroupChatCreationDTO chatCreationDTO, String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
         List<UUID> participantsIds = chatCreationDTO.getParticipants();
 
@@ -78,10 +91,7 @@ public class GroupChatController {
                 .creator(authorizedUser)
                 .build();
 
-        GroupChat createdChat = groupChatService
-                .createGroupChat(toBeCreated, participants, authorizedUser);
-
-        return formGroupChatRetrievalDTOForAuthorizedUser(createdChat, authorizedUser);
+        return groupChatService.createGroupChat(toBeCreated, participants, authorizedUser);
     }
 
     @PatchMapping("/{chat_id}")
@@ -90,6 +100,11 @@ public class GroupChatController {
             @PathVariable("chat_id") UUID chatId,
             @RequestHeader("Authorization") String token
     ) {
+        patchGroupChatTransaction(chatPatchDTO, chatId, token);
+    }
+
+    @Transactional
+    public void patchGroupChatTransaction(GroupChatPatchDTO chatPatchDTO, UUID chatId, String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
         GroupChat groupChat = groupChatService
                 .getGroupChatById(chatId, authorizedUser);
@@ -111,6 +126,11 @@ public class GroupChatController {
             @RequestHeader("Authorization") String token,
             @RequestBody UUID userId
     ) {
+        addUserToGroupChatTransaction(chatId, userId, token);
+    }
+
+    @Transactional
+    public void addUserToGroupChatTransaction(UUID chatId, UUID userId, String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
         GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
         AccountInfo toBeAddedUser = userService.findUserById(userId);
@@ -123,6 +143,11 @@ public class GroupChatController {
             @PathVariable("user_id") UUID userId,
             @RequestHeader("Authorization") String token
     ) {
+        deleteUserFromGroupChatTransaction(chatId, userId, token);
+    }
+
+    @Transactional
+    public void deleteUserFromGroupChatTransaction(UUID chatId, UUID userId, String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
         GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
         AccountInfo toBeDeletedUser = userService.findUserById(userId);
@@ -134,14 +159,17 @@ public class GroupChatController {
             @PathVariable("chat_id") UUID chatId,
             @RequestHeader("Authorization") String token
     ) {
-        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
-        List<GroupMessage> messages = groupChatMessageService
-                .getAllMessages(groupChat, authorizedUser);
-
+        List<GroupMessage> messages = getGroupChatMessagesTransaction(chatId, token);
         return messages.stream()
                 .map(GroupMessageRetrievalDTO::fromGroupMessage)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<GroupMessage> getGroupChatMessagesTransaction(UUID chatId, String token) {
+        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
+        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
+        return groupChatMessageService.getAllMessages(groupChat, authorizedUser);
     }
 
     @PostMapping("/{chat_id}/messages")
@@ -149,6 +177,16 @@ public class GroupChatController {
             @RequestBody GroupMessageCreationDTO messageCreationDTO,
             @PathVariable("chat_id") UUID chatId,
             @RequestHeader("Authorization") String token
+    ) {
+
+        GroupMessage savedMessage = addMessageToGroupChatTransaction(messageCreationDTO, chatId, token);
+        return GroupMessageRetrievalDTO.fromGroupMessage(savedMessage);
+    }
+
+    @Transactional
+    public GroupMessage addMessageToGroupChatTransaction(
+            GroupMessageCreationDTO messageCreationDTO,
+            UUID chatId, String token
     ) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
         GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
@@ -158,10 +196,8 @@ public class GroupChatController {
                 .contents(messageCreationDTO.getContents())
                 .build();
 
-        GroupMessage savedMessage = groupChatMessageService
+        return groupChatMessageService
                 .addMessage(groupChat, message, authorizedUser);
-
-        return GroupMessageRetrievalDTO.fromGroupMessage(savedMessage);
     }
 
     @PatchMapping("/{chat_id}/messages/{message_id}")
@@ -171,8 +207,17 @@ public class GroupChatController {
             @PathVariable("message_id") UUID messageId,
             @RequestHeader("Authorization") String token
     ) {
+        patchMessageOfGroupChatTransaction(token, chatId, messageId, messageCreationDTO);
+    }
+
+    @Transactional
+    public GroupMessage patchMessageOfGroupChatTransaction(
+            String token, UUID chatId,
+            UUID messageId, GroupMessageCreationDTO messageCreationDTO
+    ) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
         GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
+
         GroupMessage message = GroupMessage.builder()
                 .id(messageId)
                 .author(authorizedUser)
@@ -180,7 +225,7 @@ public class GroupChatController {
                 .contents(messageCreationDTO.getContents())
                 .build();
 
-         groupChatMessageService
+        return groupChatMessageService
                 .patchMessage(groupChat, message, authorizedUser);
     }
 
@@ -190,28 +235,18 @@ public class GroupChatController {
             @PathVariable("message_id") UUID messageId,
             @RequestHeader("Authorization") String token
     ) {
+        deleteMessageOfGroupChatTransaction(chatId, messageId, token);
+    }
+
+    @Transactional
+    public void deleteMessageOfGroupChatTransaction(
+            UUID chatId, UUID messageId, String token
+    ) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
         GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
         GroupMessage message = groupChatMessageService.getMessageById(messageId);
 
         groupChatMessageService
                 .deleteMessage(groupChat, message, authorizedUser);
-    }
-
-
-    private GroupChatRetrievalDTO
-    formGroupChatRetrievalDTOForAuthorizedUser(
-            GroupChat groupChat,
-            AccountInfo author
-    ) {
-        List<AccountInfo> participants =
-                groupChatService.getGroupChatMembers(groupChat, author);
-        var lastMessage = groupChatMessageService.getLastMessage(groupChat, author);
-
-        GroupMessageRetrievalDTO lastMessageDTO = null;
-        if (lastMessage != null) {
-            lastMessageDTO = GroupMessageRetrievalDTO.fromGroupMessage(lastMessage);
-        }
-        return GroupChatRetrievalDTO.fromGroupChat(groupChat, participants, lastMessageDTO);
     }
 }
