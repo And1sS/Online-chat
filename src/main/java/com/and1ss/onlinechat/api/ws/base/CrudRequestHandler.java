@@ -23,7 +23,7 @@ public interface CrudRequestHandler<T> {
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
             WebSocketMessage<T> message
-    );
+    ) throws JsonProcessingException;
 
     void handleReadRequest(
             WebSocketSession session,

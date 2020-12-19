@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS private_chat
 
 CREATE TABLE IF NOT EXISTS private_message
 (
-    id            UUID      DEFAULT uuid_generate_v4(),
+    id            UUID DEFAULT uuid_generate_v4(),
     user_id       UUID,
     chat_id       UUID NOT NULL,
     contents      TEXT NOT NULL,
@@ -86,4 +86,18 @@ CREATE TABLE IF NOT EXISTS private_message
     PRIMARY KEY (id),
     CONSTRAINT chat_id_constraint FOREIGN KEY (chat_id) REFERENCES private_chat (id) ON DELETE CASCADE,
     CONSTRAINT user_id_constraint FOREIGN KEY (user_id) REFERENCES account_info (id) ON DELETE SET NULL
+);
+
+CREATE TYPE FriendshipStatus AS ENUM ('pending', 'accepted');
+CREATE CAST (character varying AS FriendshipStatus) WITH INOUT AS ASSIGNMENT;
+
+CREATE TABLE IF NOT EXISTS friends
+(
+    request_issuer_id UUID NOT NULL,
+    requestee_id      UUID NOT NULL,
+    status            FriendshipStatus NOT NULL,
+
+    CONSTRAINT friends_unique_constraint UNIQUE (request_issuer_id, requestee_id),
+    CONSTRAINT request_issuer_id_constraint FOREIGN KEY (request_issuer_id) REFERENCES account_info (id) ON DELETE CASCADE,
+    CONSTRAINT requestee_id_constraint FOREIGN KEY (requestee_id) REFERENCES account_info (id) ON DELETE CASCADE
 );

@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
-    private static ConcurrentHashMap<String, List<WebSocketSession>> activeSessions
+    private ConcurrentHashMap<String, List<WebSocketSession>> activeSessions
             = new ConcurrentHashMap();
 
     @Override
@@ -34,17 +34,18 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
 
+        log.info("Closed connection with: " + session.getRemoteAddress()
+                + ", reason : " + status.getReason() + " " + status.getCode());
         if (status != CloseStatus.POLICY_VIOLATION) {
             try {
                 onUserDisconnect(session, (String) (session.getAttributes().get("userId")));
-                System.out.println("Reason : " + status.getReason() + " " + status.getCode());
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
         }
     }
 
-    private static void onUserSubscribe(WebSocketSession session, String userId) {
+    private void onUserSubscribe(WebSocketSession session, String userId) {
         final var userSessions = activeSessions.get(userId);
 
         if (userSessions == null) {
@@ -61,10 +62,8 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
         }
     }
 
-    private static void onUserDisconnect(WebSocketSession session, String userId) {
+    private void onUserDisconnect(WebSocketSession session, String userId) {
         final var userSessions = activeSessions.get(userId);
-
-        log.info("Closed connection with: " + session.getRemoteAddress());
 
         assert (userSessions != null);
 
@@ -73,11 +72,11 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
         }
     }
 
-    public static void sendToUsersWhoseIdIn(List<String> usersIds, BinaryMessage message) {
+    public void sendToUsersWhoseIdIn(List<String> usersIds, BinaryMessage message) {
         usersIds.forEach((userId) -> sendToAllUserSessions(userId, message));
     }
 
-    private static void sendToAllUserSessions(String userId, BinaryMessage message) {
+    private void sendToAllUserSessions(String userId, BinaryMessage message) {
         final var userSessions = activeSessions.get(userId);
         if (userSessions == null) {
             return;

@@ -3,6 +3,7 @@ package com.and1ss.onlinechat.api.ws.handlers;
 import com.and1ss.onlinechat.api.dto.GroupMessageCreationDTO;
 import com.and1ss.onlinechat.api.dto.GroupMessageRetrievalDTO;
 import com.and1ss.onlinechat.api.ws.base.*;
+import com.and1ss.onlinechat.api.ws.dto.WsGroupMessageDeleteDTO;
 import com.and1ss.onlinechat.api.ws.dto.WsGroupMessagePatchDTO;
 import com.and1ss.onlinechat.api.ws.dto.WebSocketMessage;
 import com.and1ss.onlinechat.domain.AccountInfo;
@@ -62,7 +63,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
         final var savedMessageDTO = GroupMessageRetrievalDTO.fromGroupMessage(pair.getSecond());
         final var webSocketMessage = new WebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_CREATE, savedMessageDTO);
         final var binaryMessage = WebSocketMessageMapper.webSocketMessageToBinaryMessage(webSocketMessage);
-        WebSocketHandler.sendToUsersWhoseIdIn(pair.getFirst(), binaryMessage);
+        webSocketHandler.sendToUsersWhoseIdIn(pair.getFirst(), binaryMessage);
     }
 
     @Transactional
@@ -104,18 +105,18 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
     ) throws JsonProcessingException {
         final var messageDTO = mapper.convertValue(
                 message.getPayload(),
-                GroupMessageCreationDTO.class
+                WsGroupMessagePatchDTO.class
         );
         final var userId = UUID.fromString((String) session.getAttributes().get("userId"));
-        final var pair = createNewMessage(messageDTO, userId);
+        final var pair = patchMessage(messageDTO, userId);
         final var savedMessageDTO = GroupMessageRetrievalDTO.fromGroupMessage(pair.getSecond());
         final var webSocketMessage = new WebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_PATCH, savedMessageDTO);
         final var binaryMessage = WebSocketMessageMapper.webSocketMessageToBinaryMessage(webSocketMessage);
-        WebSocketHandler.sendToUsersWhoseIdIn(pair.getFirst(), binaryMessage);
+        webSocketHandler.sendToUsersWhoseIdIn(pair.getFirst(), binaryMessage);
     }
 
     @Transactional
-    public Pair<List<String>, GroupMessageRetrievalDTO> patchMessage(
+    public Pair<List<String>, GroupMessage> patchMessage(
             WsGroupMessagePatchDTO messageDTO,
             UUID userId
     ) {
@@ -135,13 +136,39 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
     }
 
     @Override
-    @Transactional
     public void handleDeleteRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
             WebSocketMessage<Object> message
-    ) {
+    ) throws JsonProcessingException {
+        final var messageDTO = mapper.convertValue(
+                message.getPayload(),
+                WsGroupMessageDeleteDTO.class
+        );
+        final var userId = UUID.fromString((String) session.getAttributes().get("userId"));
+        final var pair = deleteMessage(messageDTO, userId);
+        final var savedMessageDTO = GroupMessageRetrievalDTO.fromGroupMessage(pair.getSecond());
+        final var webSocketMessage = new WebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_DELETE, savedMessageDTO);
+        final var binaryMessage = WebSocketMessageMapper.webSocketMessageToBinaryMessage(webSocketMessage);
+        webSocketHandler.sendToUsersWhoseIdIn(pair.getFirst(), binaryMessage);
+    }
 
+    @Transactional
+    public Pair<List<String>, GroupMessage> deleteMessage(
+            WsGroupMessageDeleteDTO messageDTO,
+            UUID userId
+    ) {
+        final var authorizedUser = userService.findUserById(userId);
+        final var groupChat = groupChatService.getGroupChatById(messageDTO.getChatId(), authorizedUser);
+        final var message = GroupMessage.builder()
+                .id(messageDTO.getMessageId())
+                .author(authorizedUser)
+                .chat(groupChat)
+                .build();
+
+        groupChatMessageService.deleteMessage(groupChat, message, authorizedUser);
+        final var usersIds = getGroupChatMembersIds(groupChat, authorizedUser);
+        return new Pair(usersIds, message);
     }
 
     @Override

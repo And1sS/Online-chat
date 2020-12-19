@@ -30,9 +30,4 @@ public class PrivateChat {
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
     private List<PrivateMessage> messages;
-    
-    public PrivateChat(AccountInfo user1, AccountInfo user2) {
-        this.user1 = user1;
-        this.user2 = user2;
-    }
 }

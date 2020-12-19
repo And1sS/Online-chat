@@ -74,7 +74,7 @@ public class WebSocketHandler extends AbstractWebSocketHandler {
     private void dispatchIncomingMessage(
             WebSocketSession session,
             WebSocketMessage<Object> partiallyParsedMessage
-    ) throws JsonProcessingException, CharacterCodingException {
+    ) throws JsonProcessingException {
         var messageType = partiallyParsedMessage.getMessageType();
         switch (messageType) {
             case GROUP_MESSAGE_CREATE, GROUP_MESSAGE_PATCH, GROUP_MESSAGE_DELETE ->
