@@ -1,11 +1,13 @@
 package com.and1ss.onlinechat.api.rest;
 
+import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.api.dto.FriendCreationDTO;
 import com.and1ss.onlinechat.api.dto.FriendRetrievalDTO;
 import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.Friends;
 import com.and1ss.onlinechat.services.FriendsService;
 import com.and1ss.onlinechat.services.UserService;
+import com.and1ss.onlinechat.utils.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,16 +30,13 @@ public class FriendsController {
 
     @GetMapping
     public List<FriendRetrievalDTO> getFriendsForUser(@RequestHeader("Authorization") String token) {
-        return getFriendsForUserTransaction(token)
-                .stream()
-                .map(FriendRetrievalDTO::fromFriends)
-                .collect(Collectors.toList());
+        return getFriendsForUserTransaction(token);
     }
 
     @Transactional
-    public List<Friends> getFriendsForUserTransaction(String token) {
+    public List<FriendRetrievalDTO> getFriendsForUserTransaction(String token) {
         AccountInfo user = userService.authorizeUserByBearerToken(token);
-        return friendsService.getFriendsForUser(user);
+        return friendsService.getFriendsForUserDTO(user);
     }
 
     @PostMapping
@@ -45,14 +44,23 @@ public class FriendsController {
             @RequestHeader("Authorization") String token,
             @RequestBody FriendCreationDTO friendsDto
     ) {
-        Friends friends = createFriendRequestTransaction(token, friendsDto);
-        return FriendRetrievalDTO.fromFriends(friends);
+        Triple<Friends, AccountInfo, AccountInfo> created = createFriendRequestTransaction(token, friendsDto);
+        AccountInfoRetrievalDTO requestIssuerDto = AccountInfoRetrievalDTO.fromAccountInfo(created.getSecond());
+        AccountInfoRetrievalDTO requesteeDto = AccountInfoRetrievalDTO.fromAccountInfo(created.getThird());
+        Friends.FriendshipStatus status = created.getFirst().getFriendshipStatus();
+
+        return FriendRetrievalDTO.fromRequestIssuerAndRequesteeAndStatus(
+                requestIssuerDto, requesteeDto, status
+        );
     }
 
     @Transactional
-    public Friends createFriendRequestTransaction(String token, FriendCreationDTO friendsDto) {
+    public Triple<Friends, AccountInfo, AccountInfo> createFriendRequestTransaction(String token, FriendCreationDTO friendsDto) {
         AccountInfo user = userService.authorizeUserByBearerToken(token);
         Friends friends = new Friends(user.getId(), friendsDto.getUserId());
-        return friendsService.createFriendRequest(friends, user);
+        Friends createdFriends = friendsService.createFriendRequest(friends, user);
+        AccountInfo requestee = userService.findUserById(friendsDto.getUserId());
+
+        return new Triple(createdFriends, user, requestee);
     }
 }

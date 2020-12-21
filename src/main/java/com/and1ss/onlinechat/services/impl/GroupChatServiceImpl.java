@@ -96,8 +96,7 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     private boolean userAdminOrCreator(GroupChat chat, AccountInfo user) {
         return chat.getCreator().equals(user) ||
-                (getGroupChatUserJoin(chat, user).getMemberType()
-                        == GroupChatUser.MemberType.admin);
+                (getGroupChatUserJoin(chat, user).getMemberType() == GroupChatUser.MemberType.admin);
     }
 
     private GroupChatUser getGroupChatUserJoin(GroupChat chat, AccountInfo user) {
@@ -120,6 +119,9 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     @Override
     public List<UUID> getGroupChatMembersIds(GroupChat chat, AccountInfo author) {
+        if (!userMemberOfGroupChat(chat, author)) {
+            throw new UnauthorizedException("This user is not allowed to view this chat");
+        }
         return getGroupChatMembers(chat, author)
                 .stream()
                 .map(AccountInfo::getId)
@@ -134,12 +136,14 @@ public class GroupChatServiceImpl implements GroupChatService {
             "       cast(group_chat.creator_id AS text)        AS chat_creator_id, " +
             "       chat_creator.name                          AS chat_creator_name, " +
             "       chat_creator.surname                       AS chat_creator_surname, " +
+            "       chat_creator.login                         AS chat_creator_login," +
             "       cast(last_group_message.id AS text)        AS last_message_id, " +
             "       last_group_message.creation_time           AS last_message_creation_time, " +
             "       cast(last_group_message.author_id AS text) AS last_message_author_id, " +
             "       last_group_message.contents                AS last_message_contents, " +
             "       last_message_author.name                   AS last_message_author_name, " +
-            "       last_message_author.surname                AS last_message_author_surname " +
+            "       last_message_author.surname                AS last_message_author_surname, " +
+            "       last_message_author.login                  AS last_message_author_login " +
             "FROM group_chat " +
             "         LEFT OUTER JOIN account_info chat_creator ON group_chat.creator_id = chat_creator.id " +
             "         LEFT OUTER JOIN ( " +
@@ -167,6 +171,7 @@ public class GroupChatServiceImpl implements GroupChatService {
         return getGroupChatQueryString() + "WHERE chat_id = :chat_id";
     }
 
+    // TODO: Refactor this method
     private GroupChatRetrievalDTO mapFromTuple(Tuple tuple) {
         final UUID id = getUUIDFromTupleOrNull(tuple, "chat_id");
         final String title = (String) getFromTupleOrNull(tuple, "chat_title");
@@ -174,12 +179,14 @@ public class GroupChatServiceImpl implements GroupChatService {
         final UUID creatorId = getUUIDFromTupleOrNull(tuple, "chat_creator_id");
         final String creatorName = (String) getFromTupleOrNull(tuple, "chat_creator_name");
         final String creatorSurname = (String) getFromTupleOrNull(tuple, "chat_creator_surname");
+        final String creatorLogin = (String) getFromTupleOrNull(tuple, "chat_creator_login");
         final UUID lastMessageId = getUUIDFromTupleOrNull(tuple, "last_message_id");
         final Timestamp lastMessageCreationTime = getTimestampFromTupleOrNull(tuple, "last_message_creation_time");
         final UUID lastMessageAuthorId = getUUIDFromTupleOrNull(tuple, "last_message_author_id");
         final String lastMessageContents = (String) getFromTupleOrNull(tuple, "last_message_contents");
         final String lastMessageAuthorName = (String) getFromTupleOrNull(tuple, "last_message_author_name");
         final String lastMessageAuthorSurname = (String) getFromTupleOrNull(tuple, "last_message_author_surname");
+        final String lastMessageAuthorLogin = (String) getFromTupleOrNull(tuple, "last_message_author_login");
 
         final var groupChatBuilder = GroupChatRetrievalDTO.builder();
 
@@ -188,20 +195,19 @@ public class GroupChatServiceImpl implements GroupChatService {
         groupChatBuilder.title(title);
         groupChatBuilder.about(about);
 
-        if (creatorId == null || creatorName == null || creatorSurname == null) {
+        if (creatorId == null || creatorName == null || creatorSurname == null || creatorLogin == null) {
             groupChatBuilder.creator(null);
         } else {
             final var creator = AccountInfoRetrievalDTO.builder()
                     .id(creatorId)
                     .name(creatorName)
                     .surname(creatorSurname)
+                    .login(creatorLogin)
                     .build();
             groupChatBuilder.creator(creator);
         }
 
-        if (lastMessageId == null ||
-                lastMessageContents == null ||
-                lastMessageCreationTime == null) {
+        if (lastMessageId == null || lastMessageContents == null || lastMessageCreationTime == null) {
             groupChatBuilder.lastMessage(null);
         } else {
             final var lastMessageBuilder = GroupMessageRetrievalDTO.builder();
@@ -212,13 +218,16 @@ public class GroupChatServiceImpl implements GroupChatService {
 
             if (lastMessageAuthorId == null
                     || lastMessageAuthorName == null
-                    || lastMessageAuthorSurname == null) {
+                    || lastMessageAuthorSurname == null
+                    || lastMessageAuthorLogin == null
+            ) {
                 lastMessageBuilder.author(null);
             } else {
                 final var lastMessageAuthor = AccountInfoRetrievalDTO.builder()
                         .id(lastMessageAuthorId)
                         .name(lastMessageAuthorName)
                         .surname(lastMessageAuthorSurname)
+                        .login(lastMessageAuthorLogin)
                         .build();
                 lastMessageBuilder.author(lastMessageAuthor);
             }
@@ -246,7 +255,12 @@ public class GroupChatServiceImpl implements GroupChatService {
     }
 
     @Override
-    public GroupChatRetrievalDTO getGroupChatDTOById(UUID id, AccountInfo author) {
+    public GroupChatRetrievalDTO getGroupChatWithLastMessageDTOById(UUID id, AccountInfo author) {
+        GroupChat groupChat = groupChatRepository.findGroupChatById(id);
+        if (groupChat == null || !userMemberOfGroupChat(groupChat, author)) {
+            throw new UnauthorizedException("This user is not allowed to view this chat");
+        }
+
         final String queryString = getGroupChatByIdQueryString();
         final Query query = entityManager.createNativeQuery(queryString, Tuple.class);
         query.setParameter("chat_id", id);
@@ -310,19 +324,22 @@ public class GroupChatServiceImpl implements GroupChatService {
     ) {
         Set<GroupChatUser> allUsersJoin = toBeAdded.stream()
                 .filter(user -> !userMemberOfGroupChat(chat, user))
-                .map(user -> {
-                    GroupChatUser.MemberType memberType = GroupChatUser.MemberType.readwrite;
-                    if (user.equals(author)) {
-                        memberType = GroupChatUser.MemberType.admin;
-                    }
-
-                    return GroupChatUser.builder()
-                            .id(new GroupChatUserId(chat.getId(), user.getId()))
-                            .memberType(memberType)
-                            .build();
-                }).collect(Collectors.toSet());
+                .map(user -> getJoinForChatAndUser(chat, user))
+                .collect(Collectors.toSet());
 
         groupChatUserJoinRepository.saveAll(allUsersJoin);
+    }
+
+    private GroupChatUser getJoinForChatAndUser(GroupChat chat, AccountInfo user) {
+        GroupChatUser.MemberType memberType = GroupChatUser.MemberType.readwrite;
+        if (user.equals(chat.getCreator())) {
+            memberType = GroupChatUser.MemberType.admin;
+        }
+
+        return GroupChatUser.builder()
+                .id(new GroupChatUserId(chat.getId(), user.getId()))
+                .memberType(memberType)
+                .build();
     }
 
     @Override
@@ -350,7 +367,7 @@ public class GroupChatServiceImpl implements GroupChatService {
         throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
 
-    private String getAllGroupChatsForUserQueryString() {
+    private String getAllGroupChatsWithLastMessageForUserQueryString() {
         return getGroupChatQueryString() +
             "WHERE group_chat.id IN ( " +
             "    SELECT group_chat_id from group_user WHERE user_id = :user_id " +
@@ -358,8 +375,8 @@ public class GroupChatServiceImpl implements GroupChatService {
     }
 
     @Override
-    public List<GroupChatRetrievalDTO> getAllGroupChatsDTOForUser(AccountInfo user) {
-        final String queryString = getAllGroupChatsForUserQueryString();
+    public List<GroupChatRetrievalDTO> getAllGroupChatsWithLastMessageDTOForUser(AccountInfo user) {
+        final String queryString = getAllGroupChatsWithLastMessageForUserQueryString();
         final Query query = entityManager.createNativeQuery(queryString, Tuple.class);
         query.setParameter("user_id", user.getId());
 

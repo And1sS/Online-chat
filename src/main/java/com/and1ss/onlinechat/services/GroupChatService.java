@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface GroupChatService {
     GroupChat createGroupChat(GroupChat chat, List<AccountInfo> participants, AccountInfo author);
     GroupChat getGroupChatById(UUID id, AccountInfo author);
-    GroupChatRetrievalDTO getGroupChatDTOById(UUID id, AccountInfo author);
+    GroupChatRetrievalDTO getGroupChatWithLastMessageDTOById(UUID id, AccountInfo author);
     void patchGroupChat(GroupChat chat, AccountInfo autor);
 
     void addUser(GroupChat chat, AccountInfo author, AccountInfo toBeAdded);
@@ -28,6 +28,6 @@ public interface GroupChatService {
     List<AccountInfo> getGroupChatMembers(GroupChat chat, AccountInfo author);
     List<UUID> getGroupChatMembersIds(GroupChat chat, AccountInfo author);
 
-    List<GroupChatRetrievalDTO> getAllGroupChatsDTOForUser(AccountInfo user);
+    List<GroupChatRetrievalDTO> getAllGroupChatsWithLastMessageDTOForUser(AccountInfo user);
     List<GroupChatRetrievalDTO> getGroupChatsPageForUser(AccountInfo user);
 }

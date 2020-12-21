@@ -19,11 +19,15 @@ public class AccountInfoRetrievalDTO {
     @NonNull
     private String surname;
 
+    @NonNull
+    private String login;
+
     public static AccountInfoRetrievalDTO fromAccountInfo(AccountInfo user) {
         return AccountInfoRetrievalDTO.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .surname(user.getSurname())
+                .login(user.getLogin())
                 .build();
     }
 }

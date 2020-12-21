@@ -28,4 +28,13 @@ public class DatabaseQueryHelper {
             return null;
         }
     }
+
+    public static Enum getEnumFromTupleOrNull(Tuple tuple, String key, Class<? extends Enum> enumClass) {
+        try {
+            String stringValue = (String) getFromTupleOrNull(tuple, key);
+            return Enum.valueOf(enumClass, stringValue);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
 }
