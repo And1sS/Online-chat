@@ -1,5 +1,6 @@
 package com.and1ss.onlinechat.services;
 
+import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.domain.LoginInfo;
 import com.and1ss.onlinechat.domain.AccessToken;
 import com.and1ss.onlinechat.domain.AccountInfo;
@@ -16,4 +17,6 @@ public interface UserService {
         AccountInfo findUserByLogin(String login);
         AccountInfo findUserById(UUID id);
         List<AccountInfo> findUsersByListOfIds(List<UUID> ids);
+        List<AccountInfoRetrievalDTO> findUsersWhoAreNotCurrentUserFriends(String accessToken);
+        List<AccountInfoRetrievalDTO> findUsersWhoAreNotCurrentUserFriendsAndLoginLike(String accessToken, String loginLike);
 }

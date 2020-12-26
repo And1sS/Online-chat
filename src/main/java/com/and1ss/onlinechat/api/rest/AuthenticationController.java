@@ -30,9 +30,4 @@ public class AuthenticationController {
     private AccessTokenRetrievalDTO loginUser(@RequestBody LoginInfo credentials) {
         return new AccessTokenRetrievalDTO(userService.loginUser(credentials));
     }
-
-    @GetMapping("/account")
-    private AccountInfoRetrievalDTO getAccountInfo(@RequestHeader("Authorization") String token) {
-        return AccountInfoRetrievalDTO.fromAccountInfo(userService.authorizeUserByBearerToken(token));
-    }
 }

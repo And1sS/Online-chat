@@ -5,6 +5,7 @@ import com.and1ss.onlinechat.api.dto.FriendRetrievalDTO;
 import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.Friends;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
+import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.repositories.FriendsRepository;
 import com.and1ss.onlinechat.services.FriendsService;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class FriendsServiceImpl implements FriendsService {
 
     @Override
     public Friends createFriendRequest(Friends friends, AccountInfo author) {
-        Friends usersFriends = isUsersFriends(
+        Friends usersFriends = getFriendsByUsersIds(
                 friends.getId().getRequesteeId(),
                 friends.getId().getRequestIssuerId()
         );
@@ -47,6 +48,7 @@ public class FriendsServiceImpl implements FriendsService {
 
         return friendsRepository.save(friends);
     }
+
 
     private String getFriendsForUserQueryString() {
         return "SELECT  cast(request_issuer.id AS text) AS request_issuer_id, " +
@@ -68,8 +70,7 @@ public class FriendsServiceImpl implements FriendsService {
                 "         INNER JOIN account_info requestee ON friends.requestee_id = requestee.id";
     }
 
-    public List<FriendRetrievalDTO> getFriendsForUserDTO(AccountInfo user) {
-        final String queryString = getFriendsForUserQueryString();
+    public List<FriendRetrievalDTO> getFriendsForUserDTOByStringRequest(AccountInfo user, String queryString) {
         final Query query = entityManager.createNativeQuery(queryString, Tuple.class);
         query.setParameter("user_id", user.getId());
 
@@ -79,12 +80,25 @@ public class FriendsServiceImpl implements FriendsService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<FriendRetrievalDTO> getFriendsForUserDTO(AccountInfo user) {
+        return getFriendsForUserDTOByStringRequest(user, getFriendsForUserQueryString());
+    }
+
+    @Override
+    public List<FriendRetrievalDTO> getAcceptedFriendsForUserDTO(AccountInfo user) {
+        final String queryString = getFriendsForUserQueryString() +
+                " WHERE status = '" + Friends.FriendshipStatus.accepted + "'";
+
+        return getFriendsForUserDTOByStringRequest(user, queryString);
+    }
+
     private FriendRetrievalDTO mapFromTuple(Tuple tuple) {
         final UUID requestIssuerId = getUUIDFromTupleOrNull(tuple, "request_issuer_id");
         final String requestIssuerName = (String) getFromTupleOrNull(tuple, "request_issuer_name");
         final String requestIssuerSurname = (String) getFromTupleOrNull(tuple, "request_issuer_surname");
         final String requestIssuerLogin = (String) getFromTupleOrNull(tuple, "request_issuer_login");
-        final UUID requesteeId = getUUIDFromTupleOrNull(tuple, "request_issuer_id");
+        final UUID requesteeId = getUUIDFromTupleOrNull(tuple, "requestee_id");
         final String requesteeName = (String) getFromTupleOrNull(tuple, "requestee_name");
         final String requesteeSurname = (String) getFromTupleOrNull(tuple, "requestee_surname");
         final String requesteeLogin = (String) getFromTupleOrNull(tuple, "requestee_login");
@@ -108,7 +122,30 @@ public class FriendsServiceImpl implements FriendsService {
     }
 
     @Override
-    public Friends isUsersFriends(UUID user1Id, UUID user2Id) {
+    public Friends getFriendsByUsersIds(UUID user1Id, UUID user2Id) {
         return friendsRepository.getFriendsById(user1Id, user2Id);
+    }
+
+    @Override
+    public void acceptFriendRequest(AccountInfo user, Friends friends) {
+        if (!user.getId().equals(friends.getId().getRequesteeId()) &&
+                !user.getId().equals(friends.getId().getRequestIssuerId())
+        ) {
+            throw new UnauthorizedException("This user can not accept this invitation");
+        }
+
+        friends.setFriendshipStatus(Friends.FriendshipStatus.accepted);
+        friendsRepository.save(friends);
+    }
+
+    @Override
+    public void deleteFriends(AccountInfo user, Friends friends) {
+        if (!user.getId().equals(friends.getId().getRequesteeId()) &&
+                !user.getId().equals(friends.getId().getRequestIssuerId())
+        ) {
+            throw new UnauthorizedException("This user can not delete this friends");
+        }
+
+        friendsRepository.delete(friends);
     }
 }
