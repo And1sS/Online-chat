@@ -1,9 +1,12 @@
 package com.and1ss.onlinechat.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -11,4 +14,7 @@ import lombok.NonNull;
 public class PrivateMessageCreationDTO {
     @NonNull
     private String contents;
+
+    @JsonProperty("chat_id")
+    private UUID chatId;
 }

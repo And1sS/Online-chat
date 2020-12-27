@@ -5,7 +5,7 @@ import com.and1ss.onlinechat.api.dto.GroupMessageRetrievalDTO;
 import com.and1ss.onlinechat.api.ws.base.*;
 import com.and1ss.onlinechat.api.ws.dto.WsGroupMessageDeleteDTO;
 import com.and1ss.onlinechat.api.ws.dto.WsGroupMessagePatchDTO;
-import com.and1ss.onlinechat.api.ws.dto.WebSocketMessage;
+import com.and1ss.onlinechat.api.ws.dto.ChatWebSocketMessage;
 import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.GroupChat;
 import com.and1ss.onlinechat.domain.GroupMessage;
@@ -52,7 +52,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
     public void handleCreationRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            WebSocketMessage<Object> message
+            ChatWebSocketMessage<Object> message
     ) throws JsonProcessingException {
         final var messageDTO = mapper.convertValue(
                 message.getPayload(),
@@ -61,7 +61,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
         final var userId = UUID.fromString((String) session.getAttributes().get("userId"));
         final var pair = createNewMessage(messageDTO, userId);
         final var savedMessageDTO = GroupMessageRetrievalDTO.fromGroupMessage(pair.getSecond());
-        final var webSocketMessage = new WebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_CREATE, savedMessageDTO);
+        final var webSocketMessage = new ChatWebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_CREATE, savedMessageDTO);
         final var binaryMessage = WebSocketMessageMapper.webSocketMessageToBinaryMessage(webSocketMessage);
         webSocketHandler.sendToUsersWhoseIdIn(pair.getFirst(), binaryMessage);
     }
@@ -101,7 +101,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
     public void handleUpdateRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            WebSocketMessage<Object> message
+            ChatWebSocketMessage<Object> message
     ) throws JsonProcessingException {
         final var messageDTO = mapper.convertValue(
                 message.getPayload(),
@@ -110,7 +110,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
         final var userId = UUID.fromString((String) session.getAttributes().get("userId"));
         final var pair = patchMessage(messageDTO, userId);
         final var savedMessageDTO = GroupMessageRetrievalDTO.fromGroupMessage(pair.getSecond());
-        final var webSocketMessage = new WebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_PATCH, savedMessageDTO);
+        final var webSocketMessage = new ChatWebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_PATCH, savedMessageDTO);
         final var binaryMessage = WebSocketMessageMapper.webSocketMessageToBinaryMessage(webSocketMessage);
         webSocketHandler.sendToUsersWhoseIdIn(pair.getFirst(), binaryMessage);
     }
@@ -139,7 +139,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
     public void handleDeleteRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            WebSocketMessage<Object> message
+            ChatWebSocketMessage<Object> message
     ) throws JsonProcessingException {
         final var messageDTO = mapper.convertValue(
                 message.getPayload(),
@@ -148,7 +148,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
         final var userId = UUID.fromString((String) session.getAttributes().get("userId"));
         final var pair = deleteMessage(messageDTO, userId);
         final var savedMessageDTO = GroupMessageRetrievalDTO.fromGroupMessage(pair.getSecond());
-        final var webSocketMessage = new WebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_DELETE, savedMessageDTO);
+        final var webSocketMessage = new ChatWebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_DELETE, savedMessageDTO);
         final var binaryMessage = WebSocketMessageMapper.webSocketMessageToBinaryMessage(webSocketMessage);
         webSocketHandler.sendToUsersWhoseIdIn(pair.getFirst(), binaryMessage);
     }
@@ -176,6 +176,6 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
     public void handleReadRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            WebSocketMessage<Object> message
+            ChatWebSocketMessage<Object> message
     ) {}
 }

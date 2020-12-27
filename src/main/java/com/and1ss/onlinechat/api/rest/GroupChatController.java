@@ -37,7 +37,7 @@ public class GroupChatController {
         this.userService = userService;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public List<GroupChatRetrievalDTO>
     getAllGroupChats(@RequestHeader("Authorization") String token) {
         return getAllGroupChatsTransaction(token);
@@ -81,7 +81,7 @@ public class GroupChatController {
         List<AccountInfo> participants =
                 userService.findUsersByListOfIds(participantsIds);
 
-        if (participants.size() < 2) {
+        if (participants.isEmpty()) {
             throw new BadRequestException("Chats must have at least two members");
         }
 

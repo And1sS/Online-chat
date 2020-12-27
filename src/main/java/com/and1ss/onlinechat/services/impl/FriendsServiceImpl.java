@@ -70,12 +70,52 @@ public class FriendsServiceImpl implements FriendsService {
                 "         INNER JOIN account_info requestee ON friends.requestee_id = requestee.id";
     }
 
+    private String getFriendsWithoutPrivateChatForUserQueryString() {
+        return
+                "SELECT cast(account_info.id AS text) AS id, " +
+                "       account_info.name             AS name, " +
+                "       account_info.surname          AS surname, " +
+                "       account_info.name             AS login " +
+                "FROM (SELECT friends_where_current_request_issuer.requestee_id AS id " +
+                "      FROM ( " +
+                "               SELECT * " +
+                "               FROM friends f " +
+                "               WHERE f.request_issuer_id = :user_id " +
+                "                 AND f.status = 'accepted' " +
+                "           ) friends_where_current_request_issuer " +
+                "      UNION ALL " +
+                "      SELECT friends_where_current_requestee.request_issuer_id AS id " +
+                "      FROM ( " +
+                "               SELECT * " +
+                "               FROM friends f " +
+                "               WHERE f.requestee_id = :user_id " +
+                "                 AND f.status = 'accepted' " +
+                "           ) friends_where_current_requestee " +
+                "     ) accepted_friends_ids " +
+                "INNER JOIN account_info ON account_info.id = accepted_friends_ids.id " +
+                "WHERE account_info.id NOT IN ( " +
+                "    SELECT friends_1.user_1_id AS id " +
+                "    FROM ( " +
+                "             SELECT user_1_id " +
+                "             FROM private_chat pch " +
+                "             WHERE pch.user_2_id = :user_id " +
+                "         ) friends_1 " +
+                "    UNION ALL " +
+                "    SELECT friends_2.user_2_id AS id " +
+                "    FROM ( " +
+                "             SELECT user_2_id " +
+                "             FROM private_chat pch " +
+                "             WHERE pch.user_1_id = :user_id " +
+                "         ) friends_2 " +
+                ") ";
+    }
+
     public List<FriendRetrievalDTO> getFriendsForUserDTOByStringRequest(AccountInfo user, String queryString) {
         final Query query = entityManager.createNativeQuery(queryString, Tuple.class);
         query.setParameter("user_id", user.getId());
 
         return ((List<Tuple>) query.getResultList()).stream()
-                .map(this::mapFromTuple)
+                .map(this::mapToFriendRetrievalDTO)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
@@ -93,7 +133,37 @@ public class FriendsServiceImpl implements FriendsService {
         return getFriendsForUserDTOByStringRequest(user, queryString);
     }
 
-    private FriendRetrievalDTO mapFromTuple(Tuple tuple) {
+    @Override
+    public List<AccountInfoRetrievalDTO> getAcceptedFriendsWithoutPrivateChatsForUserDTO(AccountInfo user) {
+        final String queryString = getFriendsWithoutPrivateChatForUserQueryString();
+        final Query query = entityManager.createNativeQuery(queryString, Tuple.class);
+        query.setParameter("user_id", user.getId());
+
+        return ((List<Tuple>) query.getResultList()).stream()
+                .map(this::mapToAccountInfoRetrievalDTO)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    private AccountInfoRetrievalDTO mapToAccountInfoRetrievalDTO(Tuple tuple) {
+        final UUID id = getUUIDFromTupleOrNull(tuple, "id");
+        final String name = (String) getFromTupleOrNull(tuple, "name");
+        final String surname = (String) getFromTupleOrNull(tuple, "surname");
+        final String login = (String) getFromTupleOrNull(tuple, "login");
+
+        if (name == null || surname == null || id == null || login == null) {
+            return null;
+        }
+
+        return AccountInfoRetrievalDTO.builder()
+                .id(id)
+                .name(name)
+                .surname(surname)
+                .login(login)
+                .build();
+    }
+
+    private FriendRetrievalDTO mapToFriendRetrievalDTO(Tuple tuple) {
         final UUID requestIssuerId = getUUIDFromTupleOrNull(tuple, "request_issuer_id");
         final String requestIssuerName = (String) getFromTupleOrNull(tuple, "request_issuer_name");
         final String requestIssuerSurname = (String) getFromTupleOrNull(tuple, "request_issuer_surname");

@@ -41,15 +41,18 @@ public class PrivateChatController {
         this.userService = userService;
     }
 
-    @GetMapping("/all")
-    public List<PrivateChatRetrievalDTO> getAllPrivateChats(@RequestHeader("Authorization") String token) {
-        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
+    @GetMapping
+    public List<PrivateChatRetrievalDTO> getAllPrivateChats(
+            @RequestHeader("Authorization") String token
+    ) {
+        return getAllPrivateChatsTransaction(token);
+    }
 
-        List<PrivateChat> privateChats =
-                privateChatService.getAllPrivateChatsForUser(authorizedUser);
-        return privateChats.stream()
-                .map(PrivateChatRetrievalDTO::fromPrivateChat)
-                .collect(Collectors.toList());
+    @Transactional
+    public List<PrivateChatRetrievalDTO> getAllPrivateChatsTransaction(String token) {
+        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
+        return privateChatService
+                .getAllPrivateChatsWithLastMessageDTOForUser(authorizedUser);
     }
 
     @GetMapping("/{chat_id}")
@@ -57,10 +60,14 @@ public class PrivateChatController {
             @PathVariable("chat_id") UUID chatId,
             @RequestHeader("Authorization") String token
     ) {
+        return getPrivateChatTransaction(chatId, token);
+    }
+
+    @Transactional
+    public PrivateChatRetrievalDTO getPrivateChatTransaction(UUID chatId, String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        PrivateChat privateChat = privateChatService
-                .getPrivateChatById(chatId, authorizedUser);
-        return PrivateChatRetrievalDTO.fromPrivateChat(privateChat);
+        return privateChatService
+                .getPrivateChatWithLastMessageDTOById(chatId, authorizedUser);
     }
 
     @PostMapping
@@ -83,7 +90,7 @@ public class PrivateChatController {
         PrivateChat createdChat = privateChatService
                 .createPrivateChat(toBeCreated, authorizedUser);
 
-        return PrivateChatRetrievalDTO.fromPrivateChat(createdChat);
+        return PrivateChatRetrievalDTO.fromPrivateChat(createdChat, null);
     }
 
     @PostMapping("/{chat_id}/messages")

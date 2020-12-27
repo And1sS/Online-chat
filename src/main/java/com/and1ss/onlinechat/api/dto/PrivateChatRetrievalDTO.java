@@ -1,6 +1,7 @@
 package com.and1ss.onlinechat.api.dto;
 
 import com.and1ss.onlinechat.domain.PrivateChat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.UUID;
@@ -13,11 +14,19 @@ public class PrivateChatRetrievalDTO {
     @NonNull
     private UUID id;
 
+    @JsonProperty("user_1")
     private AccountInfoRetrievalDTO user1;
 
+    @JsonProperty("user_2")
     private AccountInfoRetrievalDTO user2;
 
-    public static PrivateChatRetrievalDTO fromPrivateChat(PrivateChat privateChat) {
+    @JsonProperty("last_message")
+    private PrivateMessageRetrievalDTO lastMessage;
+
+    public static PrivateChatRetrievalDTO fromPrivateChat(
+            PrivateChat privateChat,
+            PrivateMessageRetrievalDTO lastMessage
+    ) {
         AccountInfoRetrievalDTO user1 =
                 AccountInfoRetrievalDTO.fromAccountInfo(privateChat.getUser1());
         AccountInfoRetrievalDTO user2 =
@@ -27,6 +36,7 @@ public class PrivateChatRetrievalDTO {
                 .id(privateChat.getId())
                 .user1(user1)
                 .user2(user2)
+                .lastMessage(lastMessage)
                 .build();
     }
 }

@@ -1,7 +1,8 @@
 package com.and1ss.onlinechat.api.ws.base;
 
 import com.and1ss.onlinechat.api.ws.dispatchers.GroupMessageRequestDispatcher;
-import com.and1ss.onlinechat.api.ws.dto.WebSocketMessage;
+import com.and1ss.onlinechat.api.ws.dispatchers.PrivateMessageRequestDispatcher;
+import com.and1ss.onlinechat.api.ws.dto.ChatWebSocketMessage;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.InternalServerException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,10 +22,15 @@ import java.util.HashMap;
 public class WebSocketHandler extends AbstractWebSocketHandler {
 
     private final GroupMessageRequestDispatcher groupMessageRequestDispatcher;
+    private final PrivateMessageRequestDispatcher privateMessageRequestDispatcher;
 
     @Autowired
-    public WebSocketHandler(GroupMessageRequestDispatcher groupMessageRequestDispatcher) {
+    public WebSocketHandler(
+            GroupMessageRequestDispatcher groupMessageRequestDispatcher,
+            PrivateMessageRequestDispatcher privateMessageRequestDispatcher
+    ) {
         this.groupMessageRequestDispatcher = groupMessageRequestDispatcher;
+        this.privateMessageRequestDispatcher = privateMessageRequestDispatcher;
     }
 
     @Override
@@ -65,20 +71,23 @@ public class WebSocketHandler extends AbstractWebSocketHandler {
             throw new BadRequestException("Invalid message type");
         }
 
-        WebSocketMessage<Object> partiallyParsedMessage =
-                new WebSocketMessage(messageType, payload);
+        ChatWebSocketMessage<Object> partiallyParsedMessage =
+                new ChatWebSocketMessage(messageType, payload);
 
         dispatchIncomingMessage(session, partiallyParsedMessage);
     }
 
     private void dispatchIncomingMessage(
             WebSocketSession session,
-            WebSocketMessage<Object> partiallyParsedMessage
-    ) throws JsonProcessingException {
+            ChatWebSocketMessage<Object> partiallyParsedMessage
+    ) throws JsonProcessingException, CharacterCodingException {
         var messageType = partiallyParsedMessage.getMessageType();
         switch (messageType) {
             case GROUP_MESSAGE_CREATE, GROUP_MESSAGE_PATCH, GROUP_MESSAGE_DELETE ->
                 groupMessageRequestDispatcher.dispatchMessage(session, this, partiallyParsedMessage);
+
+            case PRIVATE_MESSAGE_CREATE, PRIVATE_MESSAGE_PATCH, PRIVATE_MESSAGE_DELETE ->
+                privateMessageRequestDispatcher.dispatchMessage(session, this, partiallyParsedMessage);
 
             default -> throw new InternalServerException("Message type " + messageType.toString() + " is not supported");
         }

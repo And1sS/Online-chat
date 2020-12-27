@@ -25,7 +25,7 @@ public class PrivateMessage {
     @Setter(AccessLevel.NONE)
     protected UUID id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private AccountInfo author;
 

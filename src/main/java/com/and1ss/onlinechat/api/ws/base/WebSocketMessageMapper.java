@@ -1,6 +1,6 @@
 package com.and1ss.onlinechat.api.ws.base;
 
-import com.and1ss.onlinechat.api.ws.dto.WebSocketMessage;
+import com.and1ss.onlinechat.api.ws.dto.ChatWebSocketMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class WebSocketMessageMapper {
         return data;
     }
 
-    public static <T> BinaryMessage webSocketMessageToBinaryMessage(WebSocketMessage<Object> message)
+    public static <T> BinaryMessage webSocketMessageToBinaryMessage(ChatWebSocketMessage<Object> message)
             throws JsonProcessingException {
         return new BinaryMessage(stringToByteBuffer(objectMapper.writeValueAsString(message)));
     }

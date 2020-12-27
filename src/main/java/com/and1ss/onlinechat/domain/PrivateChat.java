@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-@Builder
 @Entity
 @Table(name = "private_chat")
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicInsert
@@ -27,7 +27,4 @@ public class PrivateChat {
     @OneToOne
     @JoinColumn(name = "user_2_id", referencedColumnName = "id")
     private AccountInfo user2;
-
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
-    private List<PrivateMessage> messages;
 }

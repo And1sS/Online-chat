@@ -16,6 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
+import javax.transaction.Transactional;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import static com.and1ss.onlinechat.utils.DatabaseQueryHelper.*;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private AccountInfoRepository accountInfoRepository;

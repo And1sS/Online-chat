@@ -1,6 +1,6 @@
 package com.and1ss.onlinechat.api.ws.base;
 
-import com.and1ss.onlinechat.api.ws.dto.WebSocketMessage;
+import com.and1ss.onlinechat.api.ws.dto.ChatWebSocketMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -10,24 +10,24 @@ public interface CrudRequestHandler<T> {
     void handleCreationRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            WebSocketMessage<T> message
+            ChatWebSocketMessage<T> message
     ) throws JsonProcessingException, CharacterCodingException;
 
     void handleUpdateRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            WebSocketMessage<T> message
+            ChatWebSocketMessage<T> message
     ) throws JsonProcessingException;
 
     void handleDeleteRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            WebSocketMessage<T> message
+            ChatWebSocketMessage<T> message
     ) throws JsonProcessingException;
 
     void handleReadRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            WebSocketMessage<T> message
+            ChatWebSocketMessage<T> message
     );
 }

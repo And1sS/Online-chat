@@ -10,7 +10,7 @@ import lombok.NonNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class WebSocketMessage<T> {
+public class ChatWebSocketMessage<T> {
     @NonNull
     @JsonProperty("message_type")
     private WebSocketMessageType messageType;
