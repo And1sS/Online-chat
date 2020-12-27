@@ -18,8 +18,5 @@ public class GroupChatCreationDTO {
     private String about;
 
     @NonNull
-    private UUID creator;
-
-    @NonNull
     private List<UUID> participants;
 }

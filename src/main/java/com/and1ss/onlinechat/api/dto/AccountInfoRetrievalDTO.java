@@ -1,11 +1,8 @@
 package com.and1ss.onlinechat.api.dto;
 
-import com.and1ss.onlinechat.services.model.AccountInfo;
+import com.and1ss.onlinechat.domain.AccountInfo;
 import lombok.*;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import java.util.UUID;
 
 @Data
@@ -13,8 +10,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountInfoRetrievalDTO {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @NonNull
     private UUID id;
 
     @NonNull
@@ -23,11 +19,15 @@ public class AccountInfoRetrievalDTO {
     @NonNull
     private String surname;
 
+    @NonNull
+    private String login;
+
     public static AccountInfoRetrievalDTO fromAccountInfo(AccountInfo user) {
         return AccountInfoRetrievalDTO.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .surname(user.getSurname())
+                .login(user.getLogin())
                 .build();
     }
 }

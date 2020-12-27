@@ -4,23 +4,33 @@ import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.services.PrivateChatMessageService;
 import com.and1ss.onlinechat.services.PrivateChatService;
-import com.and1ss.onlinechat.services.model.PrivateChat;
-import com.and1ss.onlinechat.services.model.PrivateMessage;
-import com.and1ss.onlinechat.services.impl.repos.PrivateChatMessageRepository;
-import com.and1ss.onlinechat.services.model.AccountInfo;
+import com.and1ss.onlinechat.domain.PrivateChat;
+import com.and1ss.onlinechat.domain.PrivateMessage;
+import com.and1ss.onlinechat.repositories.PrivateChatMessageRepository;
+import com.and1ss.onlinechat.domain.AccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class PrivateChatMessageServiceImpl implements PrivateChatMessageService {
-    @Autowired
+
     private PrivateChatService privateChatService;
 
-    @Autowired
     private PrivateChatMessageRepository privateChatMessageRepository;
+
+    @Autowired
+    public PrivateChatMessageServiceImpl(
+            PrivateChatService privateChatService,
+            PrivateChatMessageRepository privateChatMessageRepository
+    ) {
+        this.privateChatService = privateChatService;
+        this.privateChatMessageRepository = privateChatMessageRepository;
+    }
 
     @Override
     public List<PrivateMessage> getAllMessages(PrivateChat privateChat, AccountInfo author) {
@@ -28,7 +38,8 @@ public class PrivateChatMessageServiceImpl implements PrivateChatMessageService 
             throw new UnauthorizedException("This user can not view messages of this chat");
         }
 
-        return privateChat.getMessages();
+        return privateChatMessageRepository
+                .getPrivateMessagesByChatId(privateChat.getId());
     }
 
     @Override
@@ -44,8 +55,6 @@ public class PrivateChatMessageServiceImpl implements PrivateChatMessageService 
         if (message.getContents().isEmpty()) {
             throw new BadRequestException("Message contents must not be empty");
         }
-        message.setAuthor(author);
-        message.setChat(privateChat);
 
         return privateChatMessageRepository.save(message);
     }
