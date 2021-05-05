@@ -38,34 +38,20 @@ public class FriendsController {
                     defaultValue = "false"
             ) Boolean acceptedOnly
     ) {
-        return getFriendsForUserTransaction(token, acceptedOnly);
-    }
-
-    @Transactional
-    public List<FriendRetrievalDTO> getFriendsForUserTransaction(
-            String token,
-            boolean acceptedOnly
-    ) {
         AccountInfo user = userService.authorizeUserByBearerToken(token);
         if (acceptedOnly) {
-            return friendsService.getAcceptedFriendsForUserDTO(user);
+            return friendsService.getAcceptedFriendsForUser(user.getId());
         } else {
-            return friendsService.getFriendsForUserDTO(user);
+            return friendsService.getFriendsForUser(user.getId());
         }
     }
 
-    @GetMapping("/without_private_chat")
+    @GetMapping("/without-private-chat")
     private List<AccountInfoRetrievalDTO> getFriendsToCreatePrivateChatWith(
             @RequestHeader("Authorization") String token
     ) {
-        return getFriendsToCreatePrivateChatWithTransaction(token);
-    }
-
-    @Transactional
-    public List<AccountInfoRetrievalDTO>
-    getFriendsToCreatePrivateChatWithTransaction(String token) {
         final AccountInfo user = userService.authorizeUserByBearerToken(token);
-        return friendsService.getAcceptedFriendsWithoutPrivateChatsForUserDTO(user);
+        return friendsService.getAcceptedFriendsWithoutPrivateChatsForUser(user.getId());
     }
 
     @PostMapping
@@ -73,25 +59,8 @@ public class FriendsController {
             @RequestHeader("Authorization") String token,
             @RequestBody FriendCreationDTO friendsDto
     ) {
-        Triple<Friends, AccountInfo, AccountInfo> created = createFriendRequestTransaction(token, friendsDto);
-        AccountInfoRetrievalDTO requestIssuerDto = AccountInfoRetrievalDTO.fromAccountInfo(created.getSecond());
-        AccountInfoRetrievalDTO requesteeDto = AccountInfoRetrievalDTO.fromAccountInfo(created.getThird());
-        Friends.FriendshipStatus status = created.getFirst().getFriendshipStatus();
-
-        return FriendRetrievalDTO.fromRequestIssuerAndRequesteeAndStatus(
-                requestIssuerDto, requesteeDto, status
-        );
-    }
-
-    @Transactional
-    public Triple<Friends, AccountInfo, AccountInfo> createFriendRequestTransaction(
-            String token, FriendCreationDTO friendsDto) {
         AccountInfo user = userService.authorizeUserByBearerToken(token);
-        Friends friends = new Friends(user.getId(), friendsDto.getUserId());
-        Friends createdFriends = friendsService.createFriendRequest(friends, user);
-        AccountInfo requestee = userService.findUserById(friendsDto.getUserId());
-
-        return new Triple(createdFriends, user, requestee);
+        return friendsService.createFriendRequest(user.getId(), friendsDto.getUserId());
     }
 
     @PutMapping
@@ -99,18 +68,8 @@ public class FriendsController {
             @RequestHeader("Authorization") String token,
             @RequestParam(value = "user_id") UUID userId
     ) {
-        acceptFriendByIdTransaction(token, userId);
-    }
-
-    @Transactional
-    public void acceptFriendByIdTransaction(String token, UUID otherUserId) {
         AccountInfo currentUser = userService.authorizeUserByBearerToken(token);
-        Friends friends = friendsService.getFriendsByUsersIds(currentUser.getId(), otherUserId);
-
-        if (friends == null) {
-            throw new BadRequestException("Invalid friend id");
-        }
-        friendsService.acceptFriendRequest(currentUser, friends);
+        friendsService.acceptFriendRequest(userId, currentUser.getId());
     }
 
     @DeleteMapping
@@ -118,17 +77,7 @@ public class FriendsController {
             @RequestHeader("Authorization") String token,
             @RequestParam(value = "user_id") UUID userId
     ) {
-        deleteFriendByIdTransaction(token, userId);
-    }
-
-    @Transactional
-    public void deleteFriendByIdTransaction(String token, UUID otherUserId) {
         AccountInfo currentUser = userService.authorizeUserByBearerToken(token);
-        Friends friends = friendsService.getFriendsByUsersIds(currentUser.getId(), otherUserId);
-
-        if (friends == null) {
-            throw new BadRequestException("Invalid friend id");
-        }
-        friendsService.deleteFriends(currentUser, friends);
+        friendsService.deleteFriends(currentUser.getId(), userId);
     }
 }
