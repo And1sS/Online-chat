@@ -14,11 +14,7 @@ public class DatabaseQueryHelper {
     }
 
     public static UUID getUUIDFromTupleOrNull(Tuple tuple, String key) {
-        try {
-            return UUID.fromString((String) tuple.get(key));
-        } catch (Exception ignored) {
-            return null;
-        }
+        return getUUIDFromStringOrNull((String) tuple.get(key));
     }
 
     public static Timestamp getTimestampFromTupleOrNull(Tuple tuple, String key) {
@@ -30,9 +26,21 @@ public class DatabaseQueryHelper {
     }
 
     public static Enum getEnumFromTupleOrNull(Tuple tuple, String key, Class<? extends Enum> enumClass) {
+        String stringValue = (String) getFromTupleOrNull(tuple, key);
+        return getEnumFromStringOrNull(stringValue, enumClass);
+    }
+
+    public static UUID getUUIDFromStringOrNull(String value) {
         try {
-            String stringValue = (String) getFromTupleOrNull(tuple, key);
-            return Enum.valueOf(enumClass, stringValue);
+            return UUID.fromString(value);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    public static Enum getEnumFromStringOrNull(String value, Class<? extends Enum> enumClass) {
+        try {
+            return Enum.valueOf(enumClass, value);
         } catch (Exception ignored) {
             return null;
         }

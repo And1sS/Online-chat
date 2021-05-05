@@ -48,13 +48,13 @@ public class FriendsController {
     ) {
         AccountInfo user = userService.authorizeUserByBearerToken(token);
         if (acceptedOnly) {
-            return friendsService.getAcceptedFriendsForUserDTO(user);
+            return friendsService.getAcceptedFriendsForUser(user);
         } else {
-            return friendsService.getFriendsForUserDTO(user);
+            return friendsService.getFriendsForUser(user);
         }
     }
 
-    @GetMapping("/without_private_chat")
+    @GetMapping("/without-private-chat")
     private List<AccountInfoRetrievalDTO> getFriendsToCreatePrivateChatWith(
             @RequestHeader("Authorization") String token
     ) {
@@ -65,7 +65,7 @@ public class FriendsController {
     public List<AccountInfoRetrievalDTO>
     getFriendsToCreatePrivateChatWithTransaction(String token) {
         final AccountInfo user = userService.authorizeUserByBearerToken(token);
-        return friendsService.getAcceptedFriendsWithoutPrivateChatsForUserDTO(user);
+        return friendsService.getAcceptedFriendsWithoutPrivateChatsForUser(user);
     }
 
     @PostMapping

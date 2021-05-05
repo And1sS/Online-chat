@@ -10,9 +10,9 @@ import java.util.UUID;
 
 public interface FriendsService {
     Friends createFriendRequest(Friends friends, AccountInfo author);
-    List<FriendRetrievalDTO> getFriendsForUserDTO(AccountInfo user);
-    List<FriendRetrievalDTO> getAcceptedFriendsForUserDTO(AccountInfo user);
-    List<AccountInfoRetrievalDTO> getAcceptedFriendsWithoutPrivateChatsForUserDTO(AccountInfo user);
+    List<FriendRetrievalDTO> getFriendsForUser(AccountInfo user);
+    List<FriendRetrievalDTO> getAcceptedFriendsForUser(AccountInfo user);
+    List<AccountInfoRetrievalDTO> getAcceptedFriendsWithoutPrivateChatsForUser(AccountInfo user);
     Friends getFriendsByUsersIds(UUID user1Id, UUID user2Id);
     void acceptFriendRequest(AccountInfo user, Friends friends);
     void deleteFriends(AccountInfo user, Friends friends);
