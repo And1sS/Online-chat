@@ -25,7 +25,7 @@ public interface FriendsRepository extends JpaRepository<Friends, UUID> {
                     "(request_issuer_id = :user2Id AND requestee_id = :user1Id) ",
             nativeQuery = true
     )
-    Friends getFriendsById(UUID user1Id, UUID user2Id);
+    Friends getFriendsByUsersIds(UUID user1Id, UUID user2Id);
 
     @Query(value = getFriendsForUserQuery, nativeQuery = true)
     List<FriendsForUserProjection> getFriendForUser(UUID userId);

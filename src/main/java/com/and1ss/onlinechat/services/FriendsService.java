@@ -9,11 +9,15 @@ import java.util.List;
 import java.util.UUID;
 
 public interface FriendsService {
-    Friends createFriendRequest(Friends friends, AccountInfo author);
-    List<FriendRetrievalDTO> getFriendsForUser(AccountInfo user);
-    List<FriendRetrievalDTO> getAcceptedFriendsForUser(AccountInfo user);
-    List<AccountInfoRetrievalDTO> getAcceptedFriendsWithoutPrivateChatsForUser(AccountInfo user);
-    Friends getFriendsByUsersIds(UUID user1Id, UUID user2Id);
-    void acceptFriendRequest(AccountInfo user, Friends friends);
-    void deleteFriends(AccountInfo user, Friends friends);
+    FriendRetrievalDTO createFriendRequest(UUID requestIssuerId, UUID requesteeId);
+
+    List<FriendRetrievalDTO> getFriendsForUser(UUID userId);
+    List<FriendRetrievalDTO> getAcceptedFriendsForUser(UUID userId);
+    List<AccountInfoRetrievalDTO> getAcceptedFriendsWithoutPrivateChatsForUser(UUID userId);
+
+    void acceptFriendRequest(UUID requestIssuerId, UUID requesteeId);
+
+    void deleteFriends(UUID user1Id, UUID user2Id);
+
+    boolean areUsersFriends(UUID user1Id, UUID user2Id);
 }
