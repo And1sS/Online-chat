@@ -82,7 +82,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
         final var authorizedUser = userService.findUserById(userId);
         final var groupChat = groupChatService.getGroupChatById(
                 messageDTO.getChatId(),
-                authorizedUser
+                authorizedUser.getId()
         );
         final var groupMessage = GroupMessage.builder()
                 .author(authorizedUser)
@@ -121,7 +121,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
             UUID userId
     ) {
         final var authorizedUser = userService.findUserById(userId);
-        final var groupChat = groupChatService.getGroupChatById(messageDTO.getChatId(), authorizedUser);
+        final var groupChat = groupChatService.getGroupChatById(messageDTO.getChatId(), authorizedUser.getId());
         final var message = GroupMessage.builder()
                 .id(messageDTO.getMessageId())
                 .author(authorizedUser)
@@ -159,7 +159,7 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
             UUID userId
     ) {
         final var authorizedUser = userService.findUserById(userId);
-        final var groupChat = groupChatService.getGroupChatById(messageDTO.getChatId(), authorizedUser);
+        final var groupChat = groupChatService.getGroupChatById(messageDTO.getChatId(), authorizedUser.getId());
         final var message = GroupMessage.builder()
                 .id(messageDTO.getMessageId())
                 .author(authorizedUser)

@@ -4,7 +4,6 @@ import com.and1ss.onlinechat.api.dto.*;
 import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.GroupChat;
 import com.and1ss.onlinechat.domain.GroupMessage;
-import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.services.GroupChatMessageService;
 import com.and1ss.onlinechat.services.GroupChatService;
 import com.and1ss.onlinechat.services.UserService;
@@ -47,7 +46,7 @@ public class GroupChatController {
     public List<GroupChatRetrievalDTO> getAllGroupChatsTransaction(String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
 
-        return groupChatService.getAllGroupChatsWithLastMessageDTOForUser(authorizedUser);
+        return groupChatService.getAllGroupChatsForUser(authorizedUser.getId());
     }
 
     @GetMapping("/{chat_id}")
@@ -55,43 +54,18 @@ public class GroupChatController {
             @PathVariable("chat_id") UUID chatId,
             @RequestHeader("Authorization") String token
     ) {
-        return getGroupChatDTOTransaction(chatId, token);
+        final AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
+        return groupChatService.getGroupChatById(chatId, authorizedUser.getId());
     }
 
-    @Transactional
-    public GroupChatRetrievalDTO getGroupChatDTOTransaction(UUID chatId, String token) {
-        final AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        return groupChatService.getGroupChatWithLastMessageDTOById(chatId, authorizedUser);
-    }
 
     @PostMapping
     public GroupChatRetrievalDTO createGroupChat(
             @RequestBody GroupChatCreationDTO chatCreationDTO,
             @RequestHeader("Authorization") String token
     ) {
-        final GroupChat createdChat = createGroupChatTransaction(chatCreationDTO, token);
-        return GroupChatRetrievalDTO.fromGroupChat(createdChat, null);
-    }
-
-    @Transactional
-    public GroupChat createGroupChatTransaction(GroupChatCreationDTO chatCreationDTO, String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        List<UUID> participantsIds = chatCreationDTO.getParticipants();
-
-        List<AccountInfo> participants =
-                userService.findUsersByListOfIds(participantsIds);
-
-        if (participants.isEmpty()) {
-            throw new BadRequestException("Chats must have at least two members");
-        }
-
-        GroupChat toBeCreated = GroupChat.builder()
-                .title(chatCreationDTO.getTitle())
-                .about(chatCreationDTO.getAbout())
-                .creator(authorizedUser)
-                .build();
-
-        return groupChatService.createGroupChat(toBeCreated, participants, authorizedUser);
+        return groupChatService.createGroupChat(chatCreationDTO, authorizedUser.getId());
     }
 
     @PatchMapping("/{chat_id}")
@@ -100,24 +74,8 @@ public class GroupChatController {
             @PathVariable("chat_id") UUID chatId,
             @RequestHeader("Authorization") String token
     ) {
-        patchGroupChatTransaction(chatPatchDTO, chatId, token);
-    }
-
-    @Transactional
-    public void patchGroupChatTransaction(GroupChatPatchDTO chatPatchDTO, UUID chatId, String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        GroupChat groupChat = groupChatService
-                .getGroupChatById(chatId, authorizedUser);
-
-        if (chatPatchDTO.getAbout() != null && !chatPatchDTO.getAbout().isEmpty()) {
-            groupChat.setAbout(chatPatchDTO.getAbout());
-        }
-
-        if (chatPatchDTO.getTitle() != null && !chatPatchDTO.getTitle().isEmpty()) {
-            groupChat.setTitle(chatPatchDTO.getTitle());
-        }
-
-        groupChatService.patchGroupChat(groupChat, authorizedUser);
+        groupChatService.patchGroupChat(chatId, chatPatchDTO, authorizedUser.getId());
     }
 
     @PostMapping("/{chat_id}/users")
@@ -126,15 +84,8 @@ public class GroupChatController {
             @RequestHeader("Authorization") String token,
             @RequestBody UUID userId
     ) {
-        addUserToGroupChatTransaction(chatId, userId, token);
-    }
-
-    @Transactional
-    public void addUserToGroupChatTransaction(UUID chatId, UUID userId, String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
-        AccountInfo toBeAddedUser = userService.findUserById(userId);
-        groupChatService.addUser(groupChat, authorizedUser, toBeAddedUser);
+        groupChatService.addUser(chatId, userId, authorizedUser.getId());
     }
 
     @DeleteMapping("/{chat_id}/users/{user_id}")
@@ -143,16 +94,10 @@ public class GroupChatController {
             @PathVariable("user_id") UUID userId,
             @RequestHeader("Authorization") String token
     ) {
-        deleteUserFromGroupChatTransaction(chatId, userId, token);
+        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
+        groupChatService.deleteUser(chatId, userId, authorizedUser.getId());
     }
 
-    @Transactional
-    public void deleteUserFromGroupChatTransaction(UUID chatId, UUID userId, String token) {
-        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
-        AccountInfo toBeDeletedUser = userService.findUserById(userId);
-        groupChatService.deleteUser(groupChat, authorizedUser, toBeDeletedUser);
-    }
 
     @GetMapping("/{chat_id}/messages")
     public List<GroupMessageRetrievalDTO> getGroupChatMessages(
@@ -168,8 +113,7 @@ public class GroupChatController {
     @Transactional
     public List<GroupMessage> getGroupChatMessagesTransaction(UUID chatId, String token) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
-        return groupChatMessageService.getAllMessages(groupChat, authorizedUser);
+        return groupChatMessageService.getAllMessages(chatId, authorizedUser.getId());
     }
 
     @PostMapping("/{chat_id}/messages")
@@ -189,7 +133,7 @@ public class GroupChatController {
             UUID chatId, String token
     ) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
+        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser.getId());
         GroupMessage message = GroupMessage.builder()
                 .author(authorizedUser)
                 .chat(groupChat)
@@ -216,7 +160,7 @@ public class GroupChatController {
             UUID messageId, GroupMessageCreationDTO messageCreationDTO
     ) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
+        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser.getId());
 
         GroupMessage message = GroupMessage.builder()
                 .id(messageId)
@@ -243,7 +187,7 @@ public class GroupChatController {
             UUID chatId, UUID messageId, String token
     ) {
         AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
-        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser);
+        GroupChat groupChat = groupChatService.getGroupChatById(chatId, authorizedUser.getId());
         GroupMessage message = groupChatMessageService.getMessageById(messageId);
 
         groupChatMessageService

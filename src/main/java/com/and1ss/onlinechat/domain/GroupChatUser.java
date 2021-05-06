@@ -14,10 +14,22 @@ public class GroupChatUser {
     public enum MemberType { read, readwrite, admin }
 
     @EmbeddedId
-    GroupChatUserId id;
+    private GroupChatUserId id;
 
     @NonNull
     @Column(name = "member_type")
     @Enumerated(EnumType.STRING)
-    private MemberType memberType;
+    private MemberType memberType = MemberType.readwrite;
+
+    public GroupChatUser(GroupChat groupChat, AccountInfo user) {
+        this.id = new GroupChatUserId(groupChat, user);
+    }
+
+    public AccountInfo getUser() {
+        return id.getUser();
+    }
+
+    public GroupChat getGroupChat() {
+        return id.getGroupChat();
+    }
 }

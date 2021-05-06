@@ -35,17 +35,17 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
     }
 
     @Override
-    public List<GroupMessage> getAllMessages(GroupChat groupChat, AccountInfo author) {
-        if (!groupChatService.userMemberOfGroupChat(groupChat, author)) {
+    public List<GroupMessage> getAllMessages(UUID chatId, UUID authorId) {
+        if (!groupChatService.userMemberOfGroupChat(chatId, authorId)) {
             throw new UnauthorizedException("This user can not view messages of this chat");
         }
 
-        return groupMessageRepository.getGroupMessagesByChatId(groupChat.getId());
+        return groupMessageRepository.getGroupMessagesByChatId(chatId);
     }
 
     @Override
     public GroupMessage getLastMessage(GroupChat groupChat, AccountInfo author) {
-        if (!groupChatService.userMemberOfGroupChat(groupChat, author)) {
+        if (!groupChatService.userMemberOfGroupChat(groupChat.getId(), author.getId())) {
             throw new UnauthorizedException("This user can not view messages of this chat");
         }
 

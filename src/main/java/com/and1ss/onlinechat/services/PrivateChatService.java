@@ -9,10 +9,16 @@ import java.util.UUID;
 
 public interface PrivateChatService {
     PrivateChat createPrivateChat(PrivateChat chat, AccountInfo author);
+
     PrivateChat getPrivateChatById(UUID id, AccountInfo author);
+
     PrivateChatRetrievalDTO getPrivateChatWithLastMessageDTOById(UUID id, AccountInfo author);
+
     List<PrivateChat> getAllPrivateChatsForUser(AccountInfo user);
+
     List<PrivateChat> getPrivateChatsPageForUser(AccountInfo user);
+
     boolean userMemberOfPrivateChat(PrivateChat chat, AccountInfo author);
+
     List<PrivateChatRetrievalDTO> getAllPrivateChatsWithLastMessageDTOForUser(AccountInfo user);
 }

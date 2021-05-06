@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -14,9 +13,17 @@ import java.util.UUID;
 @NoArgsConstructor
 @Embeddable
 public class GroupChatUserId implements Serializable {
-    @Column(columnDefinition = "group_chat_id")
-    private UUID groupChatId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "group_chat_id", referencedColumnName = "id",
+            insertable = false, updatable = false
+    )
+    private GroupChat groupChat;
 
-    @Column(columnDefinition = "user_id")
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "user_id", referencedColumnName = "id",
+            insertable = false, updatable = false
+    )
+    private AccountInfo user;
 }

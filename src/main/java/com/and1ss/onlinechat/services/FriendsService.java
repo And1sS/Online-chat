@@ -12,7 +12,9 @@ public interface FriendsService {
     FriendRetrievalDTO createFriendRequest(UUID requestIssuerId, UUID requesteeId);
 
     List<FriendRetrievalDTO> getFriendsForUser(UUID userId);
+
     List<FriendRetrievalDTO> getAcceptedFriendsForUser(UUID userId);
+
     List<AccountInfoRetrievalDTO> getAcceptedFriendsWithoutPrivateChatsForUser(UUID userId);
 
     void acceptFriendRequest(UUID requestIssuerId, UUID requesteeId);

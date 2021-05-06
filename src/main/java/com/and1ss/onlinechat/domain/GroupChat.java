@@ -24,9 +24,10 @@ public class GroupChat {
 
     private String about;
 
-    @NonNull
-    @Setter(AccessLevel.NONE)
     @OneToOne
     @JoinColumn(name = "creator_id", referencedColumnName = "id")
     private AccountInfo creator;
+
+    @OneToMany(mappedBy = "id.groupChat", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<GroupChatUser> groupChatUsers = new ArrayList<>();
 }

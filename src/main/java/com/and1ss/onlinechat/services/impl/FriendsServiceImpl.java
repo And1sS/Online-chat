@@ -2,6 +2,7 @@ package com.and1ss.onlinechat.services.impl;
 
 import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.api.dto.FriendRetrievalDTO;
+import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.Friends;
 import com.and1ss.onlinechat.domain.Friends.FriendshipStatus;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
@@ -43,7 +44,10 @@ public class FriendsServiceImpl implements FriendsService {
             throw new BadRequestException("These users are already friends");
         }
 
-        Friends toCreate = new Friends(requestIssuerId, requesteeId);
+        AccountInfo requestIssuer = userService.findUserById(requestIssuerId);
+        AccountInfo requestee = userService.findUserById(requesteeId);
+
+        Friends toCreate = new Friends(requestIssuer, requestee);
         try {
             friendsRepository.save(toCreate);
         } catch (ConstraintViolationException e) {
@@ -51,8 +55,8 @@ public class FriendsServiceImpl implements FriendsService {
         }
 
         return FriendRetrievalDTO.fromRequestIssuerAndRequesteeAndStatus(
-                fromAccountInfo(userService.findUserById(requestIssuerId)),
-                fromAccountInfo(userService.findUserById(requesteeId)),
+                fromAccountInfo(toCreate.getRequestIssuer()),
+                fromAccountInfo(toCreate.getRequestee()),
                 FriendshipStatus.pending
         );
     }
@@ -95,8 +99,8 @@ public class FriendsServiceImpl implements FriendsService {
     @Override
     public void acceptFriendRequest(UUID requestIssuerId, UUID requesteeId) {
         Friends friends = friendsRepository.getFriendsByUsersIds(requestIssuerId, requesteeId);
-        if (friends == null || friends.getId().getRequesteeId() != requesteeId
-                || friends.getId().getRequestIssuerId() != requestIssuerId) {
+        if (friends == null || !friends.getRequestee().getId().equals(requesteeId)
+                || !friends.getRequestIssuer().getId().equals(requestIssuerId)) {
             throw new BadRequestException("Invalid friend acceptation request");
         }
 
