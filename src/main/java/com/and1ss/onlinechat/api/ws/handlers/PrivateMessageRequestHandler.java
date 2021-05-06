@@ -1,7 +1,7 @@
 package com.and1ss.onlinechat.api.ws.handlers;
 
-import com.and1ss.onlinechat.api.dto.PrivateMessageCreationDTO;
-import com.and1ss.onlinechat.api.dto.PrivateMessageRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.PrivateMessageCreationDTO;
+import com.and1ss.onlinechat.services.dto.PrivateMessageRetrievalDTO;
 import com.and1ss.onlinechat.api.ws.base.AbstractWebSocketHandler;
 import com.and1ss.onlinechat.api.ws.base.CrudRequestHandler;
 import com.and1ss.onlinechat.api.ws.base.WebSocketMessageMapper;
@@ -45,7 +45,7 @@ public class PrivateMessageRequestHandler implements CrudRequestHandler<Object> 
     public void handleCreationRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<Object> message
+            ChatWebSocketMessage<?> message
     ) throws JsonProcessingException {
         final var messageDTO = mapper.convertValue(
                 message.getPayload(),
@@ -87,7 +87,7 @@ public class PrivateMessageRequestHandler implements CrudRequestHandler<Object> 
     public void handleUpdateRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<Object> message
+            ChatWebSocketMessage<?> message
     ) {
 
     }
@@ -96,7 +96,7 @@ public class PrivateMessageRequestHandler implements CrudRequestHandler<Object> 
     public void handleDeleteRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<Object> message
+            ChatWebSocketMessage<?> message
     ) throws JsonProcessingException {
 
     }
@@ -105,7 +105,7 @@ public class PrivateMessageRequestHandler implements CrudRequestHandler<Object> 
     public void handleReadRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<Object> message
+            ChatWebSocketMessage<?> message
     ) {
 
     }

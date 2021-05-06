@@ -1,6 +1,6 @@
 package com.and1ss.onlinechat.api.rest;
 
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.services.UserService;
 import org.springframework.web.bind.annotation.*;
 

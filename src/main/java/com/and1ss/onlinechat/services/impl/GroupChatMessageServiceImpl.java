@@ -1,27 +1,37 @@
 package com.and1ss.onlinechat.services.impl;
 
-import com.and1ss.onlinechat.exceptions.BadRequestException;
-import com.and1ss.onlinechat.exceptions.UnauthorizedException;
-import com.and1ss.onlinechat.services.GroupChatMessageService;
-import com.and1ss.onlinechat.services.GroupChatService;
+import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.GroupChat;
 import com.and1ss.onlinechat.domain.GroupChatUser;
 import com.and1ss.onlinechat.domain.GroupMessage;
+import com.and1ss.onlinechat.exceptions.BadRequestException;
+import com.and1ss.onlinechat.exceptions.UnauthorizedException;
+import com.and1ss.onlinechat.repositories.AccountInfoRepository;
+import com.and1ss.onlinechat.repositories.GroupChatRepository;
 import com.and1ss.onlinechat.repositories.GroupMessageRepository;
-import com.and1ss.onlinechat.domain.AccountInfo;
+import com.and1ss.onlinechat.services.GroupChatMessageService;
+import com.and1ss.onlinechat.services.GroupChatService;
+import com.and1ss.onlinechat.services.dto.GroupMessageCreationDTO;
+import com.and1ss.onlinechat.services.dto.GroupMessagePatchDTO;
+import com.and1ss.onlinechat.services.dto.GroupMessageRetrievalDTO;
+import com.and1ss.onlinechat.services.mappers.GroupMessageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class GroupChatMessageServiceImpl implements GroupChatMessageService {
 
     private GroupChatService groupChatService;
+
+    private GroupChatRepository groupChatRepository;
+
+    private AccountInfoRepository accountInfoRepository;
 
     private GroupMessageRepository groupMessageRepository;
 
@@ -35,87 +45,113 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
     }
 
     @Override
-    public List<GroupMessage> getAllMessages(UUID chatId, UUID authorId) {
-        if (!groupChatService.userMemberOfGroupChat(chatId, authorId)) {
+    public List<GroupMessageRetrievalDTO> getAllMessages(UUID chatId, UUID requesterId) {
+        if (!groupChatService.userMemberOfGroupChat(chatId, requesterId)) {
             throw new UnauthorizedException("This user can not view messages of this chat");
         }
 
-        return groupMessageRepository.getGroupMessagesByChatId(chatId);
+        List<GroupMessage> groupMessages = groupMessageRepository.getGroupMessagesByChatId(chatId);
+        return groupMessages.stream()
+                .map(GroupMessageMapper::toGroupMessageRetrievalDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public GroupMessage getLastMessage(GroupChat groupChat, AccountInfo author) {
-        if (!groupChatService.userMemberOfGroupChat(groupChat.getId(), author.getId())) {
+    public GroupMessageRetrievalDTO getLastMessage(UUID chatId, UUID requesterId) {
+        if (!groupChatService.userMemberOfGroupChat(chatId, requesterId)) {
             throw new UnauthorizedException("This user can not view messages of this chat");
         }
 
-        return groupMessageRepository.getLastGroupMessage(groupChat.getId());
+        GroupMessage groupMessage = groupMessageRepository.getLastGroupMessage(chatId);
+        return GroupMessageMapper.toGroupMessageRetrievalDTO(groupMessage);
     }
 
     @Override
-    public GroupMessage addMessage(GroupChat groupChat, GroupMessage message, AccountInfo author) {
-        if (!groupChatService.userMemberOfGroupChat(groupChat, author)) {
+    public GroupMessageRetrievalDTO addMessage(
+            UUID chatId,
+            GroupMessageCreationDTO creationDTO,
+            UUID authorId
+    ) {
+        boolean isMember = groupChatService.userMemberOfGroupChat(chatId, authorId);
+        GroupChatUser.MemberType memberType = groupChatService.getUserMemberType(chatId, authorId);
+
+        if (!isMember || memberType.equals(GroupChatUser.MemberType.read)) {
             throw new UnauthorizedException("This user can not write messages to this chat");
         }
 
-        if (message.getContents().isEmpty()) {
+        if (creationDTO.getContents().isEmpty()) {
             throw new BadRequestException("Message contents must not be empty");
         }
 
-        return groupMessageRepository.save(message);
+        GroupChat groupChat = groupChatRepository.findById(chatId).orElseThrow();
+        AccountInfo author = accountInfoRepository.findById(authorId).orElseThrow();
+
+        GroupMessage message = GroupMessageMapper.toGroupMessage(creationDTO);
+        message.setChat(groupChat);
+        message.setAuthor(author);
+
+        groupMessageRepository.save(message);
+
+        return GroupMessageMapper.toGroupMessageRetrievalDTO(message);
     }
 
     @Override
-    public GroupMessage patchMessage(GroupChat groupChat, GroupMessage message, AccountInfo author) {
-        try {
-            groupMessageRepository.getOne(message.getId());
-        } catch (Exception e) {
-            throw new BadRequestException("Invalid message Id");
-        }
+    public GroupMessageRetrievalDTO patchMessage(
+            UUID messageId,
+            GroupMessagePatchDTO patchDTO,
+            UUID authorId
+    ) {
+        GroupMessage message = groupMessageRepository.findById(messageId).orElseThrow();
+        AccountInfo author = accountInfoRepository.findById(authorId).orElseThrow();
 
-        if (!userCanPatchMessage(groupChat, message, author)) {
+        if (!userCanPatchMessage(message, author)) {
             throw new UnauthorizedException("This user can not patch this message");
         }
 
-        return groupMessageRepository.save(message);
+        if (patchDTO.getContents().isEmpty()) {
+            throw new BadRequestException("Message can not have empty content");
+        }
+
+        message.setContents(patchDTO.getContents());
+        groupMessageRepository.save(message);
+
+        return GroupMessageMapper.toGroupMessageRetrievalDTO(message);
     }
 
     @Override
-    public GroupMessage getMessageById(UUID id) {
-        try {
-            return groupMessageRepository.getOne(id);
-        } catch (Exception e) {
-            throw new BadRequestException("Invalid message Id");
+    public GroupMessageRetrievalDTO getMessageById(UUID messageId, UUID requesterId) {
+        GroupMessage message = groupMessageRepository.findById(messageId).orElseThrow();
+        if (!groupChatService.userMemberOfGroupChat(message.getChat().getId(), requesterId)) {
+            throw new UnauthorizedException("This user can view this message");
         }
+
+        return GroupMessageMapper.toGroupMessageRetrievalDTO(message);
     }
 
-    private boolean userCanPatchMessage(GroupChat groupChat, GroupMessage message, AccountInfo user) {
-        return groupChatService.userMemberOfGroupChat(groupChat, user) &&
+    private boolean userCanPatchMessage(GroupMessage message, AccountInfo user) {
+        return groupChatService.userMemberOfGroupChat(message.getChat().getId(), user.getId()) &&
                 message.getAuthor().equals(user);
     }
 
-    private boolean userCanDeleteMessage(GroupChat groupChat, GroupMessage message, AccountInfo user) {
+    private boolean userCanDeleteMessage(GroupMessage message, AccountInfo user) {
         GroupChatUser.MemberType memberType;
         try {
-            memberType = groupChatService.getUserMemberType(groupChat, user);
+            memberType = groupChatService
+                    .getUserMemberType(message.getChat().getId(), user.getId());
         } catch (BadRequestException e) {
             return false;
         }
 
         return memberType == GroupChatUser.MemberType.admin ||
-                groupChat.getCreator().equals(user) ||
                 message.getAuthor().equals(user);
     }
 
     @Override
-    public void deleteMessage(GroupChat groupChat, GroupMessage message, AccountInfo author) {
-        try {
-            groupMessageRepository.getOne(message.getId());
-        } catch (Exception e) {
-            throw new BadRequestException("Invalid message Id");
-        }
+    public void deleteMessage(UUID messageId, UUID requesterId) {
+        GroupMessage message = groupMessageRepository.findById(messageId).orElseThrow();
+        AccountInfo author = accountInfoRepository.findById(requesterId).orElseThrow();
 
-        if (!userCanDeleteMessage(groupChat, message, author)) {
+        if (!userCanDeleteMessage(message, author)) {
             throw new UnauthorizedException("This user can not delete this message");
         }
         groupMessageRepository.delete(message);

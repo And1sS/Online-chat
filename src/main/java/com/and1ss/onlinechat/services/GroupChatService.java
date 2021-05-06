@@ -1,10 +1,10 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.api.dto.GroupChatCreationDTO;
-import com.and1ss.onlinechat.api.dto.GroupChatPatchDTO;
-import com.and1ss.onlinechat.api.dto.GroupChatRetrievalDTO;
 import com.and1ss.onlinechat.domain.GroupChatUser;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatCreationDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatPatchDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatRetrievalDTO;
 
 import java.util.List;
 import java.util.UUID;

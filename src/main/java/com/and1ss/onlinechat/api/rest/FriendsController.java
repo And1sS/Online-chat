@@ -1,18 +1,14 @@
 package com.and1ss.onlinechat.api.rest;
 
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.api.dto.FriendCreationDTO;
-import com.and1ss.onlinechat.api.dto.FriendRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.FriendCreationDTO;
+import com.and1ss.onlinechat.services.dto.FriendRetrievalDTO;
 import com.and1ss.onlinechat.domain.AccountInfo;
-import com.and1ss.onlinechat.domain.Friends;
-import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.services.FriendsService;
 import com.and1ss.onlinechat.services.UserService;
-import com.and1ss.onlinechat.utils.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 

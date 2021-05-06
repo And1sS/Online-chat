@@ -1,6 +1,6 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.domain.AccessToken;
 import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.LoginInfo;

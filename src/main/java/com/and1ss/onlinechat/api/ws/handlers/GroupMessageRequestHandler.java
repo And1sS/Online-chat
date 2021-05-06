@@ -1,7 +1,8 @@
 package com.and1ss.onlinechat.api.ws.handlers;
 
-import com.and1ss.onlinechat.api.dto.GroupMessageCreationDTO;
-import com.and1ss.onlinechat.api.dto.GroupMessageRetrievalDTO;
+import com.and1ss.onlinechat.api.ws.WebSocketUtil;
+import com.and1ss.onlinechat.services.dto.GroupMessageCreationDTO;
+import com.and1ss.onlinechat.services.dto.GroupMessageRetrievalDTO;
 import com.and1ss.onlinechat.api.ws.base.*;
 import com.and1ss.onlinechat.api.ws.dto.WsGroupMessageDeleteDTO;
 import com.and1ss.onlinechat.api.ws.dto.WsGroupMessagePatchDTO;
@@ -26,6 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @Slf4j
 public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
 
@@ -52,56 +54,29 @@ public class GroupMessageRequestHandler implements CrudRequestHandler<Object> {
     public void handleCreationRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<Object> message
+            ChatWebSocketMessage<?> message
     ) throws JsonProcessingException {
-        final var messageDTO = mapper.convertValue(
-                message.getPayload(),
-                GroupMessageCreationDTO.class
-        );
-        final var userId = UUID.fromString((String) session.getAttributes().get("userId"));
-        final var pair = createNewMessage(messageDTO, userId);
-        final var savedMessageDTO = GroupMessageRetrievalDTO.fromGroupMessage(pair.getSecond());
-        final var webSocketMessage = new ChatWebSocketMessage(WebSocketMessageType.GROUP_MESSAGE_CREATE, savedMessageDTO);
-        final var binaryMessage = WebSocketMessageMapper.webSocketMessageToBinaryMessage(webSocketMessage);
-        webSocketHandler.sendToUsersWhoseIdIn(pair.getFirst(), binaryMessage);
+        GroupMessageCreationDTO messageDTO = mapper.convertValue(
+                message.getPayload(), GroupMessageCreationDTO.class);
+        UUID userId = WebSocketUtil.getUserIdFromSession(session);
+        UUID chatId = messageDTO.getChatId();
+
+        GroupMessageRetrievalDTO createdDTO = groupChatMessageService.addMessage(
+                chatId, messageDTO, userId);
+
+        List<UUID> usersIds = groupChatService.getGroupChatMembersIds(chatId, userId);
+        ChatWebSocketMessage webSocketMessage = new ChatWebSocketMessage(
+                WebSocketMessageType.GROUP_MESSAGE_CREATE, createdDTO);
+        final var binaryMessage = WebSocketMessageMapper
+                .webSocketMessageToBinaryMessage(webSocketMessage);
+        webSocketHandler.sendToUsersWhoseIdIn(usersIds, binaryMessage);
     }
-
-    @Transactional
-    public List<String> getGroupChatMembersIds(GroupChat groupChat, AccountInfo authorizedUser) {
-        return groupChatService.getGroupChatMembersIds(groupChat, authorizedUser)
-                .stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public Pair<List<String>, GroupMessage> createNewMessage(
-            GroupMessageCreationDTO messageDTO,
-            UUID userId
-    ) {
-        final var authorizedUser = userService.findUserById(userId);
-        final var groupChat = groupChatService.getGroupChatById(
-                messageDTO.getChatId(),
-                authorizedUser.getId()
-        );
-        final var groupMessage = GroupMessage.builder()
-                .author(authorizedUser)
-                .chat(groupChat)
-                .contents(messageDTO.getContents())
-                .build();
-
-        final var savedMessage = groupChatMessageService
-                .addMessage(groupChat, groupMessage, authorizedUser);
-        final var usersIds = getGroupChatMembersIds(groupChat, authorizedUser);
-        return new Pair(usersIds, savedMessage);
-    }
-
 
     @Override
     public void handleUpdateRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<Object> message
+            ChatWebSocketMessage<?> message
     ) throws JsonProcessingException {
         final var messageDTO = mapper.convertValue(
                 message.getPayload(),

@@ -1,9 +1,7 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.api.dto.FriendRetrievalDTO;
-import com.and1ss.onlinechat.domain.AccountInfo;
-import com.and1ss.onlinechat.domain.Friends;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.FriendRetrievalDTO;
 
 import java.util.List;
 import java.util.UUID;

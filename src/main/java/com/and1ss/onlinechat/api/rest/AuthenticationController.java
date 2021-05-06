@@ -1,8 +1,8 @@
 package com.and1ss.onlinechat.api.rest;
 
 import com.and1ss.onlinechat.services.UserService;
-import com.and1ss.onlinechat.api.dto.AccessTokenRetrievalDTO;
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.AccessTokenRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.domain.LoginInfo;
 import com.and1ss.onlinechat.domain.RegisterInfo;
 import org.springframework.beans.factory.annotation.Autowired;

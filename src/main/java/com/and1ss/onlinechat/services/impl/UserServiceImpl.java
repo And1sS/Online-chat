@@ -1,7 +1,6 @@
 package com.and1ss.onlinechat.services.impl;
 
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.api.dto.FriendRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.domain.*;
 import com.and1ss.onlinechat.exceptions.*;
 import com.and1ss.onlinechat.services.UserService;

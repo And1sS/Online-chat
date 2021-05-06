@@ -1,7 +1,7 @@
 package com.and1ss.onlinechat.repositories.mappers;
 
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.api.dto.FriendRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.FriendRetrievalDTO;
 import com.and1ss.onlinechat.domain.Friends.FriendshipStatus;
 import com.and1ss.onlinechat.repositories.projections.FriendsForUserProjection;
 import com.and1ss.onlinechat.repositories.projections.FriendsWithoutPrivateChatProjection;

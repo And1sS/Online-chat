@@ -1,6 +1,5 @@
 package com.and1ss.onlinechat.services.impl;
 
-import com.and1ss.onlinechat.api.dto.*;
 import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.GroupChat;
 import com.and1ss.onlinechat.domain.GroupChatUser;
@@ -11,7 +10,9 @@ import com.and1ss.onlinechat.repositories.GroupChatRepository;
 import com.and1ss.onlinechat.repositories.GroupChatUserRepository;
 import com.and1ss.onlinechat.services.GroupChatService;
 import com.and1ss.onlinechat.services.UserService;
-import com.and1ss.onlinechat.services.mappers.GroupChatMappers;
+import com.and1ss.onlinechat.services.dto.*;
+import com.and1ss.onlinechat.services.mappers.AccountInfoMapper;
+import com.and1ss.onlinechat.services.mappers.GroupChatMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +68,7 @@ public class GroupChatServiceImpl implements GroupChatService {
         }
 
         AccountInfo creator = userService.findUserById(creatorId);
-        GroupChat toBeCreated = GroupChatMappers.toGroupChat(chatCreationDTO);
+        GroupChat toBeCreated = GroupChatMapper.toGroupChat(chatCreationDTO);
         List<AccountInfo> participants = userService.findUsersByListOfIds(chatCreationDTO.getParticipants());
 
         toBeCreated.setGroupChatUsers(mapToGroupChatUser(participants, toBeCreated));
@@ -105,7 +106,7 @@ public class GroupChatServiceImpl implements GroupChatService {
 
         return userService.findUsersByListOfIds(usersIds)
                 .stream()
-                .map(AccountInfoRetrievalDTO::fromAccountInfo)
+                .map(AccountInfoMapper::toAccountInfoRetrievalDTO)
                 .collect(Collectors.toList());
     }
 

@@ -1,6 +1,6 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.api.dto.PrivateChatRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.PrivateChatRetrievalDTO;
 import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.PrivateChat;
 
