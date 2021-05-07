@@ -8,7 +8,7 @@ import com.and1ss.onlinechat.api.ws.base.WebSocketMessageType;
 import com.and1ss.onlinechat.api.ws.dto.ChatWebSocketMessage;
 import com.and1ss.onlinechat.api.ws.dto.WsGroupMessageDeleteDTO;
 import com.and1ss.onlinechat.api.ws.dto.WsGroupMessagePatchDTO;
-import com.and1ss.onlinechat.api.ws.mapper.WsGroupMessageMapper;
+import com.and1ss.onlinechat.api.ws.mappers.WsGroupMessageMapper;
 import com.and1ss.onlinechat.services.dto.GroupMessageCreationDTO;
 import com.and1ss.onlinechat.services.GroupChatMessageService;
 import com.and1ss.onlinechat.services.GroupChatService;

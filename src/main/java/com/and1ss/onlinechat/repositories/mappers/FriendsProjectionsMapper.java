@@ -12,7 +12,7 @@ import static com.and1ss.onlinechat.utils.DatabaseQueryHelper.getEnumFromStringO
 import static com.and1ss.onlinechat.utils.DatabaseQueryHelper.getUUIDFromStringOrNull;
 
 public class FriendsProjectionsMapper {
-    public static AccountInfoRetrievalDTO mapToAccountInfoRetrievalDTOOrNull(
+    public static AccountInfoRetrievalDTO toAccountInfoRetrievalDTOOrNull(
             FriendsWithoutPrivateChatProjection projection
     ) {
         final UUID id = getUUIDFromStringOrNull(projection.getId());

@@ -8,9 +8,14 @@ import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.repositories.GroupChatRepository;
 import com.and1ss.onlinechat.repositories.GroupChatUserRepository;
+import com.and1ss.onlinechat.repositories.mappers.GroupChatProjectionsMapper;
+import com.and1ss.onlinechat.repositories.projections.GroupChatWithLastMessageProjection;
 import com.and1ss.onlinechat.services.GroupChatService;
 import com.and1ss.onlinechat.services.UserService;
-import com.and1ss.onlinechat.services.dto.*;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatCreationDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatPatchDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatRetrievalDTO;
 import com.and1ss.onlinechat.services.mappers.AccountInfoMapper;
 import com.and1ss.onlinechat.services.mappers.GroupChatMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +23,11 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.Tuple;
 import javax.transaction.Transactional;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.and1ss.onlinechat.utils.DatabaseQueryHelper.*;
 
 @Service
 @Transactional
@@ -99,9 +99,10 @@ public class GroupChatServiceImpl implements GroupChatService {
         if (!userMemberOfGroupChat(chatId, authorId)) {
             throw new UnauthorizedException("This user is not allowed to view this chat");
         }
-        List<GroupChatUser> joins = groupChatUserRepository.findAllByChatId(groupChat.getId());
-        List<UUID> usersIds = joins.stream()
-                .map(join -> join.getUser().getId())
+
+        List<UUID> usersIds = groupChatUserRepository.findAllByChatId(groupChat.getId())
+                .stream()
+                .map(groupChatUser -> groupChatUser.getUser().getId())
                 .collect(Collectors.toList());
 
         return userService.findUsersByListOfIds(usersIds)
@@ -118,129 +119,16 @@ public class GroupChatServiceImpl implements GroupChatService {
                 .collect(Collectors.toList());
     }
 
-    private String getGroupChatQueryString() {
-        return
-                "SELECT cast(group_chat.id AS text)                AS chat_id, " +
-                        "       group_chat.title                           AS chat_title, " +
-                        "       group_chat.about                           AS chat_about, " +
-                        "       cast(group_chat.creator_id AS text)        AS chat_creator_id, " +
-                        "       chat_creator.name                          AS chat_creator_name, " +
-                        "       chat_creator.surname                       AS chat_creator_surname, " +
-                        "       chat_creator.login                         AS chat_creator_login," +
-                        "       cast(last_group_message.id AS text)        AS last_message_id, " +
-                        "       last_group_message.creation_time           AS last_message_creation_time, " +
-                        "       cast(last_group_message.author_id AS text) AS last_message_author_id, " +
-                        "       last_group_message.contents                AS last_message_contents, " +
-                        "       last_message_author.name                   AS last_message_author_name, " +
-                        "       last_message_author.surname                AS last_message_author_surname, " +
-                        "       last_message_author.login                  AS last_message_author_login " +
-                        "FROM group_chat " +
-                        "         LEFT OUTER JOIN account_info chat_creator ON group_chat.creator_id = chat_creator" +
-                        ".id " +
-                        "         LEFT OUTER JOIN ( " +
-                        "    SELECT group_message.id, " +
-                        "           group_message.chat_id, " +
-                        "           group_message.creation_time, " +
-                        "           group_message.author_id, " +
-                        "           group_message.contents " +
-                        "    FROM group_message " +
-                        "             INNER JOIN ( " +
-                        "        SELECT _message.chat_id            as chat_id, " +
-                        "               max(_message.creation_time) as last_message_time " +
-                        "        FROM group_message _message " +
-                        "        GROUP BY _message.chat_id " +
-                        "    ) max_values ON " +
-                        "            group_message.chat_id = max_values.chat_id AND " +
-                        "            group_message.creation_time = max_values.last_message_time " +
-                        "    GROUP BY group_message.chat_id, group_message.id " +
-                        ") last_group_message ON group_chat.id = last_group_message.chat_id " +
-                        "         LEFT OUTER JOIN account_info last_message_author ON " +
-                        "last_message_author.id = last_group_message.author_id ";
-    }
-
-    private String getGroupChatByIdQueryString() {
-        return getGroupChatQueryString() + "WHERE chat_id = :chat_id";
-    }
-
-    // TODO: Refactor this method
-    private GroupChatRetrievalDTO mapFromTuple(Tuple tuple) {
-        final UUID id = getUUIDFromTupleOrNull(tuple, "chat_id");
-        final String title = (String) getFromTupleOrNull(tuple, "chat_title");
-        final String about = (String) getFromTupleOrNull(tuple, "chat_about");
-        final UUID creatorId = getUUIDFromTupleOrNull(tuple, "chat_creator_id");
-        final String creatorName = (String) getFromTupleOrNull(tuple, "chat_creator_name");
-        final String creatorSurname = (String) getFromTupleOrNull(tuple, "chat_creator_surname");
-        final String creatorLogin = (String) getFromTupleOrNull(tuple, "chat_creator_login");
-        final UUID lastMessageId = getUUIDFromTupleOrNull(tuple, "last_message_id");
-        final Timestamp lastMessageCreationTime = getTimestampFromTupleOrNull(tuple, "last_message_creation_time");
-        final UUID lastMessageAuthorId = getUUIDFromTupleOrNull(tuple, "last_message_author_id");
-        final String lastMessageContents = (String) getFromTupleOrNull(tuple, "last_message_contents");
-        final String lastMessageAuthorName = (String) getFromTupleOrNull(tuple, "last_message_author_name");
-        final String lastMessageAuthorSurname = (String) getFromTupleOrNull(tuple, "last_message_author_surname");
-        final String lastMessageAuthorLogin = (String) getFromTupleOrNull(tuple, "last_message_author_login");
-
-        final var groupChatBuilder = GroupChatRetrievalDTO.builder();
-
-        if (id == null || title == null) return null;
-        groupChatBuilder.id(id);
-        groupChatBuilder.title(title);
-        groupChatBuilder.about(about);
-
-        if (creatorId == null || creatorName == null || creatorSurname == null || creatorLogin == null) {
-            groupChatBuilder.creator(null);
-        } else {
-            final var creator = AccountInfoRetrievalDTO.builder()
-                    .id(creatorId)
-                    .name(creatorName)
-                    .surname(creatorSurname)
-                    .login(creatorLogin)
-                    .build();
-            groupChatBuilder.creator(creator);
-        }
-
-        if (lastMessageId == null || lastMessageContents == null || lastMessageCreationTime == null) {
-            groupChatBuilder.lastMessage(null);
-        } else {
-            final var lastMessageBuilder = GroupMessageRetrievalDTO.builder();
-            lastMessageBuilder.id(lastMessageId);
-            lastMessageBuilder.contents(lastMessageContents);
-            lastMessageBuilder.chatId(id);
-            lastMessageBuilder.createdAt(lastMessageCreationTime);
-
-            if (lastMessageAuthorId == null
-                    || lastMessageAuthorName == null
-                    || lastMessageAuthorSurname == null
-                    || lastMessageAuthorLogin == null
-            ) {
-                lastMessageBuilder.author(null);
-            } else {
-                final var lastMessageAuthor = AccountInfoRetrievalDTO.builder()
-                        .id(lastMessageAuthorId)
-                        .name(lastMessageAuthorName)
-                        .surname(lastMessageAuthorSurname)
-                        .login(lastMessageAuthorLogin)
-                        .build();
-                lastMessageBuilder.author(lastMessageAuthor);
-            }
-
-            groupChatBuilder.lastMessage(lastMessageBuilder.build());
-        }
-
-        return groupChatBuilder.build();
-    }
-
     @Override
     public GroupChatRetrievalDTO getGroupChatById(UUID chatId, UUID authorId) {
-        GroupChat groupChat = groupChatRepository.findById(chatId).orElseThrow();
-        if (groupChat == null || !userMemberOfGroupChat(chatId, authorId)) {
+        if (!userMemberOfGroupChat(chatId, authorId)) {
             throw new UnauthorizedException("This user is not allowed to view this chat");
         }
 
-        final String queryString = getGroupChatByIdQueryString();
-        final Query query = entityManager.createNativeQuery(queryString, Tuple.class);
-        query.setParameter("chat_id", chatId);
-
-        return mapFromTuple((Tuple) query.getResultList());
+        GroupChatWithLastMessageProjection projection = groupChatRepository
+                .getGroupChatWithLastMessageById(chatId)
+                .orElseThrow();
+        return GroupChatProjectionsMapper.toGroupChatRetrievalDTO(projection);
     }
 
     @Override
@@ -312,21 +200,11 @@ public class GroupChatServiceImpl implements GroupChatService {
         throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
 
-    private String getAllGroupChatsWithLastMessageForUserQueryString() {
-        return getGroupChatQueryString() +
-                "WHERE group_chat.id IN ( " +
-                "    SELECT group_chat_id from group_user WHERE user_id = :user_id " +
-                ")";
-    }
-
     @Override
     public List<GroupChatRetrievalDTO> getAllGroupChatsForUser(UUID userId) {
-        final String queryString = getAllGroupChatsWithLastMessageForUserQueryString();
-        final Query query = entityManager.createNativeQuery(queryString, Tuple.class);
-        query.setParameter("user_id", userId);
-
-        return ((List<Tuple>) query.getResultList()).stream()
-                .map(this::mapFromTuple)
+        return groupChatRepository.getGroupChatsWithLastMessageForUser(userId)
+                .stream()
+                .map(GroupChatProjectionsMapper::toGroupChatRetrievalDTO)
                 .collect(Collectors.toList());
     }
 
@@ -341,8 +219,7 @@ public class GroupChatServiceImpl implements GroupChatService {
     }
 
     private Optional<GroupChatUser> getGroupChatUser(GroupChat chat, AccountInfo user) {
-        return groupChatUserRepository
-                .findByGroupChatIdAndUserId(chat.getId(), user.getId());
+        return groupChatUserRepository.findByGroupChatIdAndUserId(chat.getId(), user.getId());
     }
 
     private List<GroupChatUser> mapToGroupChatUser(List<AccountInfo> users, GroupChat groupChat) {

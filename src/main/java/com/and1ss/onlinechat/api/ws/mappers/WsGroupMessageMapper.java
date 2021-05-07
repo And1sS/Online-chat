@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.api.ws.mapper;
+package com.and1ss.onlinechat.api.ws.mappers;
 
 import com.and1ss.onlinechat.api.ws.dto.WsGroupMessagePatchDTO;
 import com.and1ss.onlinechat.services.dto.GroupMessagePatchDTO;

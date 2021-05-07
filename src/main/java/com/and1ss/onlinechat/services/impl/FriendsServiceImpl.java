@@ -80,7 +80,7 @@ public class FriendsServiceImpl implements FriendsService {
     public List<AccountInfoRetrievalDTO> getAcceptedFriendsWithoutPrivateChatsForUser(UUID userId) {
         return friendsRepository.getAcceptedFriendsWithoutPrivateChatForUser(userId)
                 .stream()
-                .map(FriendsProjectionsMapper::mapToAccountInfoRetrievalDTOOrNull)
+                .map(FriendsProjectionsMapper::toAccountInfoRetrievalDTOOrNull)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
