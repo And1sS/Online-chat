@@ -4,7 +4,9 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -28,6 +30,7 @@ public class GroupChat {
     @JoinColumn(name = "creator_id", referencedColumnName = "id")
     private AccountInfo creator;
 
-    @OneToMany(mappedBy = "id.groupChat", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "groupChat", fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE})
     private List<GroupChatUser> groupChatUsers = new ArrayList<>();
 }

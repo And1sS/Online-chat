@@ -39,9 +39,6 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     private UserService userService;
 
-    private @PersistenceContext
-    EntityManager entityManager;
-
     @Autowired
     public GroupChatServiceImpl(
             GroupChatRepository groupChatRepository,
@@ -158,7 +155,9 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     @Override
     public void addUsers(UUID chatId, List<UUID> usersIds, UUID authorId) {
-        GroupChat chat = groupChatRepository.findGroupChatWithUsersById(chatId).orElseThrow();
+        GroupChat chat = groupChatRepository
+                .findGroupChatWithUsersById(chatId)
+                .orElseThrow();
 
         if (!userMemberOfGroupChat(chatId, authorId)) {
             throw new UnauthorizedException("This user cannot add users to this chat");
@@ -179,7 +178,9 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     @Override
     public void deleteUser(UUID chatId, UUID userId, UUID authorId) {
-        GroupChat chat = groupChatRepository.findGroupChatWithUsersById(chatId).orElseThrow();
+        GroupChat chat = groupChatRepository
+                .findGroupChatWithUsersById(chatId)
+                .orElseThrow();
         AccountInfo toBeDeleted = userService.findUserById(userId);
         AccountInfo author = userService.findUserById(authorId);
         GroupChatUser toBeDeletedJoin = getGroupChatUser(chat, toBeDeleted).orElseThrow();
@@ -192,6 +193,7 @@ public class GroupChatServiceImpl implements GroupChatService {
             throw new UnauthorizedException("This user cannot delete chat creator");
         }
 
+        chat.getGroupChatUsers().remove(toBeDeletedJoin);
         groupChatUserRepository.delete(toBeDeletedJoin);
     }
 
@@ -219,7 +221,7 @@ public class GroupChatServiceImpl implements GroupChatService {
     }
 
     private Optional<GroupChatUser> getGroupChatUser(GroupChat chat, AccountInfo user) {
-        return groupChatUserRepository.findByGroupChatIdAndUserId(chat.getId(), user.getId());
+        return groupChatUserRepository.findByGroupChatAndUser(chat, user);
     }
 
     private List<GroupChatUser> mapToGroupChatUser(List<AccountInfo> users, GroupChat groupChat) {

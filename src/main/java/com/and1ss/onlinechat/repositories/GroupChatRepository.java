@@ -14,13 +14,10 @@ import java.util.UUID;
 public interface GroupChatRepository extends JpaRepository<GroupChat, UUID> {
     @Query(
             value = "from GroupChat gch " +
-                    "   join fetch gch.groupChatUsers gchu " +
-                    "   join fetch gchu.id.user " +
+                    "   left join fetch gch.groupChatUsers gchu " +
                     "where gch.id = :id"
     )
     Optional<GroupChat> findGroupChatWithUsersById(UUID id);
-
-    List<GroupChat> findAllByIdIn(List<UUID> ids);
 
     @Query(value = getGroupChatsWithLastMessageForUserQuery, nativeQuery = true)
     List<GroupChatWithLastMessageProjection> getGroupChatsWithLastMessageForUser(UUID userId);

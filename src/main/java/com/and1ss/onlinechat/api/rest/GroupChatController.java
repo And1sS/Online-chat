@@ -66,6 +66,15 @@ public class GroupChatController {
         groupChatService.patchGroupChat(chatId, chatPatchDTO, authorizedUser.getId());
     }
 
+    @GetMapping("/{chat_id}/users")
+    public List<AccountInfoRetrievalDTO> getGroupChatMembers(
+            @PathVariable("chat_id") UUID chatId,
+            @RequestHeader("Authorization") String token
+    ) {
+        AccountInfo authorizedUser = userService.authorizeUserByBearerToken(token);
+        return groupChatService.getGroupChatMembers(chatId, authorizedUser.getId());
+    }
+
     @PostMapping("/{chat_id}/users")
     public void addUserToGroupChat(
             @PathVariable("chat_id") UUID chatId,
