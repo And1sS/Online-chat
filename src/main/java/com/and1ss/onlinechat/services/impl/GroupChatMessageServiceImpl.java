@@ -18,6 +18,8 @@ import com.and1ss.onlinechat.services.mappers.GroupMessageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
@@ -35,13 +37,20 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
 
     private GroupMessageRepository groupMessageRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Autowired
     public GroupChatMessageServiceImpl(
             GroupChatService groupChatService,
-            GroupMessageRepository groupMessageRepository
+            GroupMessageRepository groupMessageRepository,
+            GroupChatRepository groupChatRepository,
+            AccountInfoRepository accountInfoRepository
     ) {
         this.groupChatService = groupChatService;
         this.groupMessageRepository = groupMessageRepository;
+        this.groupChatRepository = groupChatRepository;
+        this.accountInfoRepository = accountInfoRepository;
     }
 
     @Override
@@ -91,6 +100,7 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
         message.setAuthor(author);
 
         groupMessageRepository.save(message);
+        entityManager.flush();
 
         return GroupMessageMapper.toGroupMessageRetrievalDTO(message);
     }
@@ -128,6 +138,17 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
         return GroupMessageMapper.toGroupMessageRetrievalDTO(message);
     }
 
+    @Override
+    public void deleteMessage(UUID messageId, UUID requesterId) {
+        GroupMessage message = groupMessageRepository.findById(messageId).orElseThrow();
+        AccountInfo author = accountInfoRepository.findById(requesterId).orElseThrow();
+
+        if (!userCanDeleteMessage(message, author)) {
+            throw new UnauthorizedException("This user can not delete this message");
+        }
+        groupMessageRepository.delete(message);
+    }
+
     private boolean userCanPatchMessage(GroupMessage message, AccountInfo user) {
         return groupChatService.userMemberOfGroupChat(message.getChat().getId(), user.getId()) &&
                 message.getAuthor().equals(user);
@@ -144,16 +165,5 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
 
         return memberType == GroupChatUser.MemberType.admin ||
                 message.getAuthor().equals(user);
-    }
-
-    @Override
-    public void deleteMessage(UUID messageId, UUID requesterId) {
-        GroupMessage message = groupMessageRepository.findById(messageId).orElseThrow();
-        AccountInfo author = accountInfoRepository.findById(requesterId).orElseThrow();
-
-        if (!userCanDeleteMessage(message, author)) {
-            throw new UnauthorizedException("This user can not delete this message");
-        }
-        groupMessageRepository.delete(message);
     }
 }

@@ -75,7 +75,7 @@ public class GroupChatServiceImpl implements GroupChatService {
         toBeCreated.setCreator(creator);
 
         toBeCreated = groupChatRepository.save(toBeCreated);
-        return GroupChatRetrievalDTO.fromGroupChat(toBeCreated, null);
+        return GroupChatMapper.toGroupChatRetrievalDTO(toBeCreated);
     }
 
     @Override

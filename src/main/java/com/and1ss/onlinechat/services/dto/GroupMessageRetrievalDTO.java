@@ -1,6 +1,5 @@
 package com.and1ss.onlinechat.services.dto;
 
-import com.and1ss.onlinechat.domain.GroupMessage;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 

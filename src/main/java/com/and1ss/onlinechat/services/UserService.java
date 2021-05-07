@@ -1,18 +1,18 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.domain.AccessToken;
 import com.and1ss.onlinechat.domain.AccountInfo;
-import com.and1ss.onlinechat.domain.LoginInfo;
-import com.and1ss.onlinechat.domain.RegisterInfo;
+import com.and1ss.onlinechat.services.dto.LoginInfoDTO;
+import com.and1ss.onlinechat.services.dto.RegisterInfoDTO;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    AccountInfo registerUser(RegisterInfo registerInfo);
+    AccountInfo registerUser(RegisterInfoDTO registerInfo);
 
-    AccessToken loginUser(LoginInfo credentials);
+    AccessToken loginUser(LoginInfoDTO credentials);
 
     AccountInfo authorizeUserByAccessToken(String accessToken);
 

@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 @Service
-public class PrivateMessageRequestHandler implements CrudRequestHandler<Object> {
+public class PrivateMessageRequestHandler implements CrudRequestHandler {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -55,8 +55,8 @@ public class PrivateMessageRequestHandler implements CrudRequestHandler<Object> 
         final var createdMessage = createNewMessage(messageDTO, userId);
         final var chat = createdMessage.getChat();
         final var usersIds = Arrays.asList(
-                chat.getUser1().getId().toString(),
-                chat.getUser2().getId().toString()
+                chat.getUser1().getId(),
+                chat.getUser2().getId()
         );
         final var savedMessageDTO = PrivateMessageRetrievalDTO.fromPrivateMessage(createdMessage);
         final var webSocketMessage = new ChatWebSocketMessage(WebSocketMessageType.PRIVATE_MESSAGE_CREATE, savedMessageDTO);

@@ -1,6 +1,5 @@
 package com.and1ss.onlinechat.services.dto;
 
-import com.and1ss.onlinechat.domain.GroupChat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -23,20 +22,5 @@ public class GroupChatRetrievalDTO {
 
     @JsonProperty("last_message")
     private GroupMessageRetrievalDTO lastMessage;
-    public static GroupChatRetrievalDTO fromGroupChat(
-            GroupChat groupChat,
-            GroupMessageRetrievalDTO lastMessage
-    ) {
-        AccountInfoRetrievalDTO creatorDTO =
-                AccountInfoRetrievalDTO.fromAccountInfo(groupChat.getCreator());
-
-        return GroupChatRetrievalDTO.builder()
-                .title(groupChat.getTitle())
-                .id(groupChat.getId())
-                .about(groupChat.getAbout())
-                .creator(creatorDTO)
-                .lastMessage(lastMessage)
-                .build();
-    }
 }
 

@@ -1,20 +1,15 @@
 package com.and1ss.onlinechat.api.rest;
 
 import com.and1ss.onlinechat.domain.AccountInfo;
-import com.and1ss.onlinechat.domain.GroupChat;
-import com.and1ss.onlinechat.domain.GroupMessage;
 import com.and1ss.onlinechat.services.GroupChatMessageService;
 import com.and1ss.onlinechat.services.GroupChatService;
 import com.and1ss.onlinechat.services.UserService;
 import com.and1ss.onlinechat.services.dto.*;
-import com.and1ss.onlinechat.services.mappers.GroupMessageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/group-chat-service/chats")

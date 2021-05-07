@@ -1,10 +1,10 @@
 package com.and1ss.onlinechat.api.rest;
 
+import com.and1ss.onlinechat.services.FriendsService;
 import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.services.dto.FriendCreationDTO;
 import com.and1ss.onlinechat.services.dto.FriendRetrievalDTO;
 import com.and1ss.onlinechat.domain.AccountInfo;
-import com.and1ss.onlinechat.services.FriendsService;
 import com.and1ss.onlinechat.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

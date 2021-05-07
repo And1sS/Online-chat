@@ -31,7 +31,7 @@ public class WebSocketMessageMapper {
         return data;
     }
 
-    public static <T> BinaryMessage webSocketMessageToBinaryMessage(ChatWebSocketMessage<Object> message)
+    public static BinaryMessage webSocketMessageToBinaryMessage(ChatWebSocketMessage<?> message)
             throws JsonProcessingException {
         return new BinaryMessage(stringToByteBuffer(objectMapper.writeValueAsString(message)));
     }

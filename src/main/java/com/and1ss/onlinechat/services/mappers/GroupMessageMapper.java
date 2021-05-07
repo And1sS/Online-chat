@@ -2,8 +2,8 @@ package com.and1ss.onlinechat.services.mappers;
 
 import com.and1ss.onlinechat.domain.GroupMessage;
 import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.services.dto.GroupMessageCreationDTO;
 import com.and1ss.onlinechat.services.dto.GroupMessageRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.GroupMessageCreationDTO;
 
 public class GroupMessageMapper {
     public static GroupMessage toGroupMessage(GroupMessageCreationDTO creationDTO) {

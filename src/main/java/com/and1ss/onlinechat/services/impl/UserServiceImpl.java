@@ -4,6 +4,8 @@ import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.domain.*;
 import com.and1ss.onlinechat.exceptions.*;
 import com.and1ss.onlinechat.services.UserService;
+import com.and1ss.onlinechat.services.dto.LoginInfoDTO;
+import com.and1ss.onlinechat.services.dto.RegisterInfoDTO;
 import com.and1ss.onlinechat.utils.password_hasher.PasswordHasher;
 import com.and1ss.onlinechat.repositories.AccessTokenRepository;
 import com.and1ss.onlinechat.repositories.AccountInfoRepository;
@@ -49,7 +51,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AccountInfo registerUser(RegisterInfo registerInfo) {
+    public AccountInfo registerUser(RegisterInfoDTO registerInfo) {
         try {
             return accountInfoRepository.save(new AccountInfo(registerInfo, passwordHasher));
         } catch (DataIntegrityViolationException e) {
@@ -58,7 +60,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AccessToken loginUser(LoginInfo credentials) {
+    public AccessToken loginUser(LoginInfoDTO credentials) {
         AccountInfo userInfo =
                 accountInfoRepository.findAccountInfoByLogin(credentials.getLogin());
 

@@ -1,5 +1,6 @@
 package com.and1ss.onlinechat.services.impl;
 
+import com.and1ss.onlinechat.services.FriendsService;
 import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.services.dto.FriendRetrievalDTO;
 import com.and1ss.onlinechat.domain.AccountInfo;
@@ -8,8 +9,8 @@ import com.and1ss.onlinechat.domain.Friends.FriendshipStatus;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.repositories.FriendsRepository;
 import com.and1ss.onlinechat.repositories.mappers.FriendsProjectionsMapper;
-import com.and1ss.onlinechat.services.FriendsService;
 import com.and1ss.onlinechat.services.UserService;
+import com.and1ss.onlinechat.services.mappers.AccountInfoMapper;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO.fromAccountInfo;
 
 @Service
 @Transactional
@@ -55,8 +54,8 @@ public class FriendsServiceImpl implements FriendsService {
         }
 
         return FriendRetrievalDTO.fromRequestIssuerAndRequesteeAndStatus(
-                fromAccountInfo(toCreate.getRequestIssuer()),
-                fromAccountInfo(toCreate.getRequestee()),
+                AccountInfoMapper.toAccountInfoRetrievalDTO(toCreate.getRequestIssuer()),
+                AccountInfoMapper.toAccountInfoRetrievalDTO(toCreate.getRequestee()),
                 FriendshipStatus.pending
         );
     }

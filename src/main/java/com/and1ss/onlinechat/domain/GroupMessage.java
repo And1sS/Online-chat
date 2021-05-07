@@ -30,7 +30,6 @@ public class GroupMessage {
     private AccountInfo author;
 
     @JsonIgnore
-    @NonNull
     @ManyToOne
     @JoinColumn(name = "chat_id", referencedColumnName = "id")
     private GroupChat chat;
@@ -40,4 +39,9 @@ public class GroupMessage {
     @Column(name = "creation_time")
     @Generated(GenerationTime.INSERT)
     private Timestamp createdAt;
+
+    @NonNull
+    public GroupChat getChat() {
+        return chat;
+    }
 }
