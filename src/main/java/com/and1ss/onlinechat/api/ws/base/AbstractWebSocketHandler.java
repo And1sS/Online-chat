@@ -8,6 +8,7 @@ import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -72,8 +73,8 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
         }
     }
 
-    public void sendToUsersWhoseIdIn(List<String> usersIds, BinaryMessage message) {
-        usersIds.forEach((userId) -> sendToAllUserSessions(userId, message));
+    public void sendToUsersWhoseIdIn(List<UUID> usersIds, BinaryMessage message) {
+        usersIds.forEach((userId) -> sendToAllUserSessions(userId.toString(), message));
     }
 
     private void sendToAllUserSessions(String userId, BinaryMessage message) {
@@ -96,6 +97,4 @@ public abstract class AbstractWebSocketHandler extends BinaryWebSocketHandler {
             }
         });
     }
-
-
 }

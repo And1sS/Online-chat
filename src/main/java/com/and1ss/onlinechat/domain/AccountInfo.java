@@ -1,10 +1,13 @@
 package com.and1ss.onlinechat.domain;
 
 import com.and1ss.onlinechat.exceptions.InternalServerException;
+import com.and1ss.onlinechat.services.dto.RegisterInfoDTO;
 import com.and1ss.onlinechat.utils.password_hasher.PasswordHasher;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.GenerationTime;
 
 import javax.persistence.*;
@@ -19,6 +22,7 @@ import java.util.*;
 @Entity
 @Table(name = "account_info")
 @DynamicInsert
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AccountInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -41,10 +45,11 @@ public class AccountInfo {
     @Generated(GenerationTime.INSERT)
     private Timestamp createdAt;
 
-    public AccountInfo(RegisterInfo registerInfo, PasswordHasher hasher) {
+    public AccountInfo(RegisterInfoDTO registerInfo, PasswordHasher hasher) {
         name = registerInfo.getName();
         surname = registerInfo.getSurname();
         login = registerInfo.getLogin();
+
         try {
             passwordHash = hasher.hashPassword(registerInfo.getPassword());
         } catch (NoSuchAlgorithmException e) {

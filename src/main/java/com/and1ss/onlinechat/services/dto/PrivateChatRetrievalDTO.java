@@ -1,6 +1,7 @@
-package com.and1ss.onlinechat.api.dto;
+package com.and1ss.onlinechat.services.dto;
 
 import com.and1ss.onlinechat.domain.PrivateChat;
+import com.and1ss.onlinechat.services.mappers.AccountInfoMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -28,9 +29,9 @@ public class PrivateChatRetrievalDTO {
             PrivateMessageRetrievalDTO lastMessage
     ) {
         AccountInfoRetrievalDTO user1 =
-                AccountInfoRetrievalDTO.fromAccountInfo(privateChat.getUser1());
+                AccountInfoMapper.toAccountInfoRetrievalDTO(privateChat.getUser1());
         AccountInfoRetrievalDTO user2 =
-                AccountInfoRetrievalDTO.fromAccountInfo(privateChat.getUser2());
+                AccountInfoMapper.toAccountInfoRetrievalDTO(privateChat.getUser2());
 
         return PrivateChatRetrievalDTO.builder()
                 .id(privateChat.getId())

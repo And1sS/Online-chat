@@ -6,28 +6,28 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.nio.charset.CharacterCodingException;
 
-public interface CrudRequestHandler<T> {
+public interface CrudRequestHandler {
     void handleCreationRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<T> message
+            ChatWebSocketMessage<?> message
     ) throws JsonProcessingException, CharacterCodingException;
 
     void handleUpdateRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<T> message
+            ChatWebSocketMessage<?> message
     ) throws JsonProcessingException;
 
     void handleDeleteRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<T> message
+            ChatWebSocketMessage<?> message
     ) throws JsonProcessingException;
 
     void handleReadRequest(
             WebSocketSession session,
             AbstractWebSocketHandler webSocketHandler,
-            ChatWebSocketMessage<T> message
+            ChatWebSocketMessage<?> message
     );
 }

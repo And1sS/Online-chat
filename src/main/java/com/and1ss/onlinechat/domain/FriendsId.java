@@ -6,8 +6,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.type.PostgresUUIDType;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -17,9 +16,18 @@ import java.util.UUID;
 @Embeddable
 
 public class FriendsId implements Serializable {
-    @Column(columnDefinition = "request_issuer_id")
-    private UUID requestIssuerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "request_issuer_id", referencedColumnName = "id",
+            insertable = false, updatable = false
+    )
+    private AccountInfo requestIssuer;
 
-    @Column(columnDefinition = "requestee_id")
-    private UUID requesteeId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "requestee_id", referencedColumnName = "id",
+            insertable = false, updatable = false
+    )
+    private AccountInfo requestee;
 }

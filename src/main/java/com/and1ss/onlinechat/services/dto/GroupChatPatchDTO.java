@@ -1,4 +1,4 @@
-package com.and1ss.onlinechat.api.dto;
+package com.and1ss.onlinechat.services.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,33 +1,38 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.api.dto.GroupChatRetrievalDTO;
-import com.and1ss.onlinechat.domain.GroupChat;
 import com.and1ss.onlinechat.domain.GroupChatUser;
-import com.and1ss.onlinechat.domain.AccountInfo;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatCreationDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatPatchDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatRetrievalDTO;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface GroupChatService {
-    GroupChat createGroupChat(GroupChat chat, List<AccountInfo> participants, AccountInfo author);
-    GroupChat getGroupChatById(UUID id, AccountInfo author);
-    GroupChatRetrievalDTO getGroupChatWithLastMessageDTOById(UUID id, AccountInfo author);
-    void patchGroupChat(GroupChat chat, AccountInfo autor);
+    GroupChatRetrievalDTO createGroupChat(GroupChatCreationDTO chatCreationDTO, UUID creatorId);
 
-    void addUser(GroupChat chat, AccountInfo author, AccountInfo toBeAdded);
-    void addUsers(GroupChat chat, AccountInfo author, List<AccountInfo> toBeAdded);
-    void deleteUser(GroupChat chat, AccountInfo author, AccountInfo toBeDeleted);
-    void changeUserMemberType(
-            GroupChat chat,
-            AccountInfo author,
-            AccountInfo member,
-            GroupChatUser.MemberType newMemberType
-    );
-    boolean userMemberOfGroupChat(GroupChat chat, AccountInfo author);
-    GroupChatUser.MemberType getUserMemberType(GroupChat chat, AccountInfo author);
-    List<AccountInfo> getGroupChatMembers(GroupChat chat, AccountInfo author);
-    List<UUID> getGroupChatMembersIds(GroupChat chat, AccountInfo author);
+    GroupChatRetrievalDTO getGroupChatById(UUID id, UUID userId);
 
-    List<GroupChatRetrievalDTO> getAllGroupChatsWithLastMessageDTOForUser(AccountInfo user);
-    List<GroupChatRetrievalDTO> getGroupChatsPageForUser(AccountInfo user);
+    void patchGroupChat(UUID chatId, GroupChatPatchDTO patchDTO, UUID author);
+
+    void addUser(UUID chatId, UUID user, UUID authorId);
+
+    void addUsers(UUID chatId, List<UUID> usersIds, UUID authorId);
+
+    void deleteUser(UUID chatId, UUID user, UUID authorId);
+
+    void changeUserMemberType(UUID chatId, UUID userId, UUID authorId, GroupChatUser.MemberType newMemberType);
+
+    boolean userMemberOfGroupChat(UUID chatId, UUID authorId);
+
+    GroupChatUser.MemberType getUserMemberType(UUID chatId, UUID authorId);
+
+    List<AccountInfoRetrievalDTO> getGroupChatMembers(UUID chatId, UUID authorId);
+
+    List<UUID> getGroupChatMembersIds(UUID chatId, UUID authorId);
+
+    List<GroupChatRetrievalDTO> getAllGroupChatsForUser(UUID authorId);
+
+    List<GroupChatRetrievalDTO> getGroupChatsPageForUser(UUID authorId);
 }

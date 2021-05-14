@@ -1,13 +1,14 @@
 package com.and1ss.onlinechat.services.impl;
 
-import com.and1ss.onlinechat.api.dto.*;
-import com.and1ss.onlinechat.domain.GroupChat;
 import com.and1ss.onlinechat.exceptions.BadRequestException;
 import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.services.PrivateChatService;
 import com.and1ss.onlinechat.domain.PrivateChat;
 import com.and1ss.onlinechat.repositories.PrivateChatRepository;
 import com.and1ss.onlinechat.domain.AccountInfo;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.PrivateChatRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.PrivateMessageRetrievalDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

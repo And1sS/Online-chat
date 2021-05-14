@@ -1,7 +1,8 @@
 package com.and1ss.onlinechat.api.rest;
 
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
 import com.and1ss.onlinechat.services.UserService;
+import com.and1ss.onlinechat.services.mappers.AccountInfoMapper;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class UsersController {
 
     @GetMapping("/account")
     private AccountInfoRetrievalDTO getAccountInfo(@RequestHeader("Authorization") String token) {
-        return AccountInfoRetrievalDTO.fromAccountInfo(userService.authorizeUserByBearerToken(token));
+        return AccountInfoMapper.toAccountInfoRetrievalDTO(userService.authorizeUserByBearerToken(token));
     }
 
     @GetMapping("/users")

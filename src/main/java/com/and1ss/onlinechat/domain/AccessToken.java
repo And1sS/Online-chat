@@ -25,7 +25,7 @@ public class AccessToken {
     private UUID token;
 
     @NonNull
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private AccountInfo user;
 

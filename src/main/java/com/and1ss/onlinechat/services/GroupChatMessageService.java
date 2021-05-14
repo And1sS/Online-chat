@@ -1,17 +1,22 @@
 package com.and1ss.onlinechat.services;
 
-import com.and1ss.onlinechat.domain.GroupChat;
-import com.and1ss.onlinechat.domain.GroupMessage;
-import com.and1ss.onlinechat.domain.AccountInfo;
+import com.and1ss.onlinechat.services.dto.GroupMessageCreationDTO;
+import com.and1ss.onlinechat.services.dto.GroupMessagePatchDTO;
+import com.and1ss.onlinechat.services.dto.GroupMessageRetrievalDTO;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface GroupChatMessageService {
-    List<GroupMessage> getAllMessages(GroupChat groupChat, AccountInfo author);
-    GroupMessage getLastMessage(GroupChat groupChat, AccountInfo author);
-    GroupMessage addMessage(GroupChat groupChat, GroupMessage message, AccountInfo author);
-    GroupMessage patchMessage(GroupChat groupChat, GroupMessage message, AccountInfo author);
-    GroupMessage getMessageById(UUID id);
-    void deleteMessage(GroupChat groupChat, GroupMessage message, AccountInfo author);
+    List<GroupMessageRetrievalDTO> getAllMessages(UUID chatId, UUID authorId);
+
+    GroupMessageRetrievalDTO getLastMessage(UUID chatId, UUID authorId);
+
+    GroupMessageRetrievalDTO addMessage(UUID chatId, GroupMessageCreationDTO creationDTO, UUID authorId);
+
+    GroupMessageRetrievalDTO patchMessage(UUID messageId, GroupMessagePatchDTO patchDTO, UUID authorId);
+
+    GroupMessageRetrievalDTO getMessageById(UUID messageId, UUID requesterId);
+
+    void deleteMessage(UUID messageId, UUID authorId);
 }

@@ -1,33 +1,33 @@
 package com.and1ss.onlinechat.services.impl;
 
-import com.and1ss.onlinechat.api.dto.AccountInfoRetrievalDTO;
-import com.and1ss.onlinechat.api.dto.GroupChatRetrievalDTO;
-import com.and1ss.onlinechat.api.dto.GroupMessageRetrievalDTO;
-import com.and1ss.onlinechat.exceptions.BadRequestException;
-import com.and1ss.onlinechat.exceptions.UnauthorizedException;
-import com.and1ss.onlinechat.services.GroupChatService;
+import com.and1ss.onlinechat.domain.AccountInfo;
 import com.and1ss.onlinechat.domain.GroupChat;
 import com.and1ss.onlinechat.domain.GroupChatUser;
-import com.and1ss.onlinechat.domain.GroupChatUserId;
+import com.and1ss.onlinechat.domain.GroupChatUser.MemberType;
+import com.and1ss.onlinechat.exceptions.BadRequestException;
+import com.and1ss.onlinechat.exceptions.UnauthorizedException;
 import com.and1ss.onlinechat.repositories.GroupChatRepository;
 import com.and1ss.onlinechat.repositories.GroupChatUserRepository;
+import com.and1ss.onlinechat.repositories.mappers.GroupChatProjectionsMapper;
+import com.and1ss.onlinechat.repositories.projections.GroupChatWithLastMessageProjection;
+import com.and1ss.onlinechat.services.GroupChatService;
 import com.and1ss.onlinechat.services.UserService;
-import com.and1ss.onlinechat.domain.AccountInfo;
+import com.and1ss.onlinechat.services.dto.AccountInfoRetrievalDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatCreationDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatPatchDTO;
+import com.and1ss.onlinechat.services.dto.GroupChatRetrievalDTO;
+import com.and1ss.onlinechat.services.mappers.AccountInfoMapper;
+import com.and1ss.onlinechat.services.mappers.GroupChatMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.Tuple;
 import javax.transaction.Transactional;
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.and1ss.onlinechat.utils.DatabaseQueryHelper.*;
 
 @Service
 @Transactional
@@ -35,316 +35,155 @@ public class GroupChatServiceImpl implements GroupChatService {
 
     private GroupChatRepository groupChatRepository;
 
-    private GroupChatUserRepository groupChatUserJoinRepository;
+    private GroupChatUserRepository groupChatUserRepository;
 
     private UserService userService;
-
-    private @PersistenceContext EntityManager entityManager;
 
     @Autowired
     public GroupChatServiceImpl(
             GroupChatRepository groupChatRepository,
-            GroupChatUserRepository groupChatUserJoinRepository,
+            GroupChatUserRepository groupChatUserRepository,
             UserService userService
     ) {
         this.groupChatRepository = groupChatRepository;
-        this.groupChatUserJoinRepository = groupChatUserJoinRepository;
+        this.groupChatUserRepository = groupChatUserRepository;
         this.userService = userService;
     }
 
     @Override
-    public GroupChat createGroupChat(
-            GroupChat chat,
-            List<AccountInfo> participants,
-            AccountInfo author
-    ) {
-        if (chat.getTitle().isEmpty()) {
+    public GroupChatRetrievalDTO createGroupChat(GroupChatCreationDTO chatCreationDTO, UUID creatorId) {
+        if (chatCreationDTO.getTitle().isEmpty()) {
             throw new BadRequestException("Group chat must have not empty title");
         }
 
-        if (!participants.contains(author)) {
-            participants.add(author);
+        if (!chatCreationDTO.getParticipants().contains(creatorId)) {
+            chatCreationDTO.getParticipants().add(creatorId);
         }
 
-        GroupChat createdChat;
-        try {
-            createdChat = groupChatRepository.save(chat);
-        } catch (Exception e) {
-            throw new BadRequestException("This chat is already present");
+        if (chatCreationDTO.getParticipants().size() < 2) {
+            throw new BadRequestException("Group chat must have at least 2 participants");
         }
 
-        uncheckedAddUsers(chat, author, participants);
+        AccountInfo creator = userService.findUserById(creatorId);
+        GroupChat toBeCreated = GroupChatMapper.toGroupChat(chatCreationDTO);
+        List<AccountInfo> participants = userService.findUsersByListOfIds(chatCreationDTO.getParticipants());
 
-        return createdChat;
+        toBeCreated.setGroupChatUsers(mapToGroupChatUser(participants, toBeCreated));
+        toBeCreated.setCreator(creator);
+
+        toBeCreated = groupChatRepository.save(toBeCreated);
+        return GroupChatMapper.toGroupChatRetrievalDTO(toBeCreated);
     }
 
     @Override
-    public boolean userMemberOfGroupChat(GroupChat chat, AccountInfo user) {
-        return getGroupChatUserJoin(chat, user) != null;
+    public boolean userMemberOfGroupChat(UUID chatId, UUID userId) {
+        AccountInfo user = userService.findUserById(userId);
+        GroupChat groupChat = groupChatRepository.findById(chatId).orElseThrow();
+        return getGroupChatUser(groupChat, user).isPresent();
     }
 
     @Override
-    public GroupChatUser.MemberType getUserMemberType(GroupChat chat, AccountInfo user) {
-        GroupChatUser join = getGroupChatUserJoin(chat, user);
-
-        if (join == null) {
-            throw new BadRequestException("This user is not member of this chat");
-        }
-
-        return join.getMemberType();
-    }
-
-    private boolean userAdminOrCreator(GroupChat chat, AccountInfo user) {
-        return chat.getCreator().equals(user) ||
-                (getGroupChatUserJoin(chat, user).getMemberType() == GroupChatUser.MemberType.admin);
-    }
-
-    private GroupChatUser getGroupChatUserJoin(GroupChat chat, AccountInfo user) {
-        return groupChatUserJoinRepository
-                .findByGroupChatIdAndUserId(chat.getId(), user.getId());
+    public MemberType getUserMemberType(UUID chatId, UUID userId) {
+        AccountInfo user = userService.findUserById(userId);
+        GroupChat groupChat = groupChatRepository.findById(chatId).orElseThrow();
+        return getGroupChatUser(groupChat, user).orElseThrow().getMemberType();
     }
 
     @Override
-    public List<AccountInfo> getGroupChatMembers(GroupChat chat, AccountInfo author) {
-        if (!userMemberOfGroupChat(chat, author)) {
+    public List<AccountInfoRetrievalDTO> getGroupChatMembers(UUID chatId, UUID authorId) {
+        GroupChat groupChat = groupChatRepository.findById(chatId).orElseThrow();
+
+        if (!userMemberOfGroupChat(chatId, authorId)) {
             throw new UnauthorizedException("This user is not allowed to view this chat");
         }
-        List<GroupChatUser> joins = groupChatUserJoinRepository.findAllByChatId(chat.getId());
-        List<UUID> usersIds = joins.stream()
-                .map(join -> join.getId().getUserId())
-                .collect(Collectors.toList());
 
-        return userService.findUsersByListOfIds(usersIds);
-    }
-
-    @Override
-    public List<UUID> getGroupChatMembersIds(GroupChat chat, AccountInfo author) {
-        if (!userMemberOfGroupChat(chat, author)) {
-            throw new UnauthorizedException("This user is not allowed to view this chat");
-        }
-        return getGroupChatMembers(chat, author)
+        List<UUID> usersIds = groupChatUserRepository.findAllByChatId(groupChat.getId())
                 .stream()
-                .map(AccountInfo::getId)
+                .map(groupChatUser -> groupChatUser.getUser().getId())
+                .collect(Collectors.toList());
+
+        return userService.findUsersByListOfIds(usersIds)
+                .stream()
+                .map(AccountInfoMapper::toAccountInfoRetrievalDTO)
                 .collect(Collectors.toList());
     }
 
-    private String getGroupChatQueryString() {
-        return
-            "SELECT cast(group_chat.id AS text)                AS chat_id, " +
-            "       group_chat.title                           AS chat_title, " +
-            "       group_chat.about                           AS chat_about, " +
-            "       cast(group_chat.creator_id AS text)        AS chat_creator_id, " +
-            "       chat_creator.name                          AS chat_creator_name, " +
-            "       chat_creator.surname                       AS chat_creator_surname, " +
-            "       chat_creator.login                         AS chat_creator_login," +
-            "       cast(last_group_message.id AS text)        AS last_message_id, " +
-            "       last_group_message.creation_time           AS last_message_creation_time, " +
-            "       cast(last_group_message.author_id AS text) AS last_message_author_id, " +
-            "       last_group_message.contents                AS last_message_contents, " +
-            "       last_message_author.name                   AS last_message_author_name, " +
-            "       last_message_author.surname                AS last_message_author_surname, " +
-            "       last_message_author.login                  AS last_message_author_login " +
-            "FROM group_chat " +
-            "         LEFT OUTER JOIN account_info chat_creator ON group_chat.creator_id = chat_creator.id " +
-            "         LEFT OUTER JOIN ( " +
-            "    SELECT group_message.id, " +
-            "           group_message.chat_id, " +
-            "           group_message.creation_time, " +
-            "           group_message.author_id, " +
-            "           group_message.contents " +
-            "    FROM group_message " +
-            "             INNER JOIN ( " +
-            "        SELECT _message.chat_id            as chat_id, " +
-            "               max(_message.creation_time) as last_message_time " +
-            "        FROM group_message _message " +
-            "        GROUP BY _message.chat_id " +
-            "    ) max_values ON " +
-            "            group_message.chat_id = max_values.chat_id AND " +
-            "            group_message.creation_time = max_values.last_message_time " +
-            "    GROUP BY group_message.chat_id, group_message.id " +
-            ") last_group_message ON group_chat.id = last_group_message.chat_id " +
-            "         LEFT OUTER JOIN account_info last_message_author ON " +
-            "last_message_author.id = last_group_message.author_id ";
-    }
-
-    private String getGroupChatByIdQueryString() {
-        return getGroupChatQueryString() + "WHERE chat_id = :chat_id";
-    }
-
-    // TODO: Refactor this method
-    private GroupChatRetrievalDTO mapFromTuple(Tuple tuple) {
-        final UUID id = getUUIDFromTupleOrNull(tuple, "chat_id");
-        final String title = (String) getFromTupleOrNull(tuple, "chat_title");
-        final String about = (String) getFromTupleOrNull(tuple, "chat_about");
-        final UUID creatorId = getUUIDFromTupleOrNull(tuple, "chat_creator_id");
-        final String creatorName = (String) getFromTupleOrNull(tuple, "chat_creator_name");
-        final String creatorSurname = (String) getFromTupleOrNull(tuple, "chat_creator_surname");
-        final String creatorLogin = (String) getFromTupleOrNull(tuple, "chat_creator_login");
-        final UUID lastMessageId = getUUIDFromTupleOrNull(tuple, "last_message_id");
-        final Timestamp lastMessageCreationTime = getTimestampFromTupleOrNull(tuple, "last_message_creation_time");
-        final UUID lastMessageAuthorId = getUUIDFromTupleOrNull(tuple, "last_message_author_id");
-        final String lastMessageContents = (String) getFromTupleOrNull(tuple, "last_message_contents");
-        final String lastMessageAuthorName = (String) getFromTupleOrNull(tuple, "last_message_author_name");
-        final String lastMessageAuthorSurname = (String) getFromTupleOrNull(tuple, "last_message_author_surname");
-        final String lastMessageAuthorLogin = (String) getFromTupleOrNull(tuple, "last_message_author_login");
-
-        final var groupChatBuilder = GroupChatRetrievalDTO.builder();
-
-        if (id == null || title == null) return null;
-        groupChatBuilder.id(id);
-        groupChatBuilder.title(title);
-        groupChatBuilder.about(about);
-
-        if (creatorId == null || creatorName == null || creatorSurname == null || creatorLogin == null) {
-            groupChatBuilder.creator(null);
-        } else {
-            final var creator = AccountInfoRetrievalDTO.builder()
-                    .id(creatorId)
-                    .name(creatorName)
-                    .surname(creatorSurname)
-                    .login(creatorLogin)
-                    .build();
-            groupChatBuilder.creator(creator);
-        }
-
-        if (lastMessageId == null || lastMessageContents == null || lastMessageCreationTime == null) {
-            groupChatBuilder.lastMessage(null);
-        } else {
-            final var lastMessageBuilder = GroupMessageRetrievalDTO.builder();
-            lastMessageBuilder.id(lastMessageId);
-            lastMessageBuilder.contents(lastMessageContents);
-            lastMessageBuilder.chatId(id);
-            lastMessageBuilder.createdAt(lastMessageCreationTime);
-
-            if (lastMessageAuthorId == null
-                    || lastMessageAuthorName == null
-                    || lastMessageAuthorSurname == null
-                    || lastMessageAuthorLogin == null
-            ) {
-                lastMessageBuilder.author(null);
-            } else {
-                final var lastMessageAuthor = AccountInfoRetrievalDTO.builder()
-                        .id(lastMessageAuthorId)
-                        .name(lastMessageAuthorName)
-                        .surname(lastMessageAuthorSurname)
-                        .login(lastMessageAuthorLogin)
-                        .build();
-                lastMessageBuilder.author(lastMessageAuthor);
-            }
-
-            groupChatBuilder.lastMessage(lastMessageBuilder.build());
-        }
-
-        return groupChatBuilder.build();
+    @Override
+    public List<UUID> getGroupChatMembersIds(UUID chatId, UUID authorId) {
+        return getGroupChatMembers(chatId, authorId)
+                .stream()
+                .map(AccountInfoRetrievalDTO::getId)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public GroupChat getGroupChatById(UUID id, AccountInfo author) {
-        GroupChat chat;
-        try {
-            chat = groupChatRepository.getOne(id);
-        } catch (Exception e) {
+    public GroupChatRetrievalDTO getGroupChatById(UUID chatId, UUID authorId) {
+        if (!userMemberOfGroupChat(chatId, authorId)) {
             throw new UnauthorizedException("This user is not allowed to view this chat");
         }
 
-        if (!userMemberOfGroupChat(chat, author)) {
-            throw new UnauthorizedException("This user is not allowed to view this chat");
-        }
-
-        return chat;
+        GroupChatWithLastMessageProjection projection = groupChatRepository
+                .getGroupChatWithLastMessageById(chatId)
+                .orElseThrow();
+        return GroupChatProjectionsMapper.toGroupChatRetrievalDTO(projection);
     }
 
     @Override
-    public GroupChatRetrievalDTO getGroupChatWithLastMessageDTOById(UUID id, AccountInfo author) {
-        GroupChat groupChat = groupChatRepository.findGroupChatById(id);
-        if (groupChat == null || !userMemberOfGroupChat(groupChat, author)) {
-            throw new UnauthorizedException("This user is not allowed to view this chat");
+    public void patchGroupChat(UUID chatId, GroupChatPatchDTO patchDTO, UUID authorId) {
+        GroupChat groupChat = groupChatRepository.findById(chatId).orElseThrow();
+        AccountInfo patchAuthor = userService.findUserById(authorId);
+
+        if (patchDTO.getAbout() != null && !patchDTO.getAbout().isEmpty()) {
+            groupChat.setAbout(patchDTO.getAbout());
         }
 
-        final String queryString = getGroupChatByIdQueryString();
-        final Query query = entityManager.createNativeQuery(queryString, Tuple.class);
-        query.setParameter("chat_id", id);
+        if (patchDTO.getTitle() != null && !patchDTO.getTitle().isEmpty()) {
+            groupChat.setTitle(patchDTO.getTitle());
+        }
 
-        return mapFromTuple((Tuple) query.getResultList());
-    }
-
-    @Override
-    public void patchGroupChat(GroupChat chat, AccountInfo author) {
-        if (!userAdminOrCreator(chat, author)) {
+        if (!userAdminOrCreator(groupChat, patchAuthor)) {
             throw new UnauthorizedException("This user can not patch this chat");
         }
 
+        groupChatRepository.save(groupChat);
+    }
+
+    @Override
+    public void addUser(UUID chatId, UUID userId, UUID authorId) {
+        addUsers(chatId, List.of(userId), authorId);
+    }
+
+    @Override
+    public void addUsers(UUID chatId, List<UUID> usersIds, UUID authorId) {
+        GroupChat chat = groupChatRepository
+                .findGroupChatWithUsersById(chatId)
+                .orElseThrow();
+
+        if (!userMemberOfGroupChat(chatId, authorId)) {
+            throw new UnauthorizedException("This user cannot add users to this chat");
+        }
+
+        List<AccountInfo> users = userService.findUsersByListOfIds(usersIds);
+        List<GroupChatUser> newUsers = users.stream().filter(user ->
+                !chat.getGroupChatUsers()
+                        .stream()
+                        .map(GroupChatUser::getUser)
+                        .collect(Collectors.toList())
+                        .contains(user)
+        ).map(user -> new GroupChatUser(chat, user)).collect(Collectors.toList());
+
+        chat.getGroupChatUsers().addAll(newUsers);
         groupChatRepository.save(chat);
     }
 
     @Override
-    public void addUser(GroupChat chat, AccountInfo author, AccountInfo toBeAdded) {
-        if (groupChatRepository.findGroupChatById(chat.getId()) == null) {
-            throw new BadRequestException("This chat does not exist");
-        }
-
-        if (!userMemberOfGroupChat(chat, author)) {
-            throw new UnauthorizedException("This user cannot add users to this chat");
-        }
-
-        if (!userMemberOfGroupChat(chat, toBeAdded)) {
-            GroupChatUserId compositeId = new GroupChatUserId(
-                    chat.getId(), toBeAdded.getId());
-
-            GroupChatUser join = GroupChatUser.builder()
-                    .memberType(GroupChatUser.MemberType.readwrite)
-                    .id(compositeId)
-                    .build();
-
-            groupChatUserJoinRepository.save(join);
-        } else {
-            throw new BadRequestException("This user is already member of this chat");
-        }
-    }
-
-    @Override
-    public void addUsers(GroupChat chat, AccountInfo author, List<AccountInfo> toBeAdded) {
-        if (groupChatRepository.findGroupChatById(chat.getId()) == null) {
-            throw new BadRequestException("This chat does not exist");
-        }
-
-        if (!userMemberOfGroupChat(chat, author)) {
-            throw new UnauthorizedException("This user cannot add users to this chat");
-        }
-
-        uncheckedAddUsers(chat, author, toBeAdded);
-    }
-
-    // TODO: Now, this method assumes that author is chat creator
-    // Fix this
-    private void uncheckedAddUsers(
-            GroupChat chat,
-            AccountInfo author,
-            List<AccountInfo> toBeAdded
-    ) {
-        Set<GroupChatUser> allUsersJoin = toBeAdded.stream()
-                .filter(user -> !userMemberOfGroupChat(chat, user))
-                .map(user -> getJoinForChatAndUser(chat, user))
-                .collect(Collectors.toSet());
-
-        groupChatUserJoinRepository.saveAll(allUsersJoin);
-    }
-
-    private GroupChatUser getJoinForChatAndUser(GroupChat chat, AccountInfo user) {
-        GroupChatUser.MemberType memberType = GroupChatUser.MemberType.readwrite;
-        if (user.equals(chat.getCreator())) {
-            memberType = GroupChatUser.MemberType.admin;
-        }
-
-        return GroupChatUser.builder()
-                .id(new GroupChatUserId(chat.getId(), user.getId()))
-                .memberType(memberType)
-                .build();
-    }
-
-    @Override
-    public void deleteUser(GroupChat chat, AccountInfo author, AccountInfo toBeDeleted) {
-        GroupChatUser toBeDeletedJoin = getGroupChatUserJoin(chat, toBeDeleted);
+    public void deleteUser(UUID chatId, UUID userId, UUID authorId) {
+        GroupChat chat = groupChatRepository
+                .findGroupChatWithUsersById(chatId)
+                .orElseThrow();
+        AccountInfo toBeDeleted = userService.findUserById(userId);
+        AccountInfo author = userService.findUserById(authorId);
+        GroupChatUser toBeDeletedJoin = getGroupChatUser(chat, toBeDeleted).orElseThrow();
 
         if (!userAdminOrCreator(chat, author)) {
             throw new UnauthorizedException("This user cannot delete members of this chat");
@@ -354,39 +193,40 @@ public class GroupChatServiceImpl implements GroupChatService {
             throw new UnauthorizedException("This user cannot delete chat creator");
         }
 
-        groupChatUserJoinRepository.delete(toBeDeletedJoin);
+        chat.getGroupChatUsers().remove(toBeDeletedJoin);
+        groupChatUserRepository.delete(toBeDeletedJoin);
     }
 
     @Override
-    public void changeUserMemberType(
-            GroupChat chat,
-            AccountInfo author,
-            AccountInfo member,
-            GroupChatUser.MemberType newMemberType
-    ) {
+    public void changeUserMemberType(UUID chatId, UUID userId, UUID authorId, MemberType newMemberType) {
         throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
 
-    private String getAllGroupChatsWithLastMessageForUserQueryString() {
-        return getGroupChatQueryString() +
-            "WHERE group_chat.id IN ( " +
-            "    SELECT group_chat_id from group_user WHERE user_id = :user_id " +
-            ")";
-    }
-
     @Override
-    public List<GroupChatRetrievalDTO> getAllGroupChatsWithLastMessageDTOForUser(AccountInfo user) {
-        final String queryString = getAllGroupChatsWithLastMessageForUserQueryString();
-        final Query query = entityManager.createNativeQuery(queryString, Tuple.class);
-        query.setParameter("user_id", user.getId());
-
-        return ((List<Tuple>) query.getResultList()).stream()
-                .map(this::mapFromTuple)
+    public List<GroupChatRetrievalDTO> getAllGroupChatsForUser(UUID userId) {
+        return groupChatRepository.getGroupChatsWithLastMessageForUser(userId)
+                .stream()
+                .map(GroupChatProjectionsMapper::toGroupChatRetrievalDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<GroupChatRetrievalDTO> getGroupChatsPageForUser(AccountInfo user) {
+    public List<GroupChatRetrievalDTO> getGroupChatsPageForUser(UUID userId) {
         throw new UnsupportedOperationException("NOT IMPLEMENTED");
+    }
+
+    private boolean userAdminOrCreator(GroupChat chat, AccountInfo user) {
+        return user != null && (chat.getCreator().equals(user) ||
+                (getUserMemberType(chat.getId(), user.getId()) == GroupChatUser.MemberType.admin));
+    }
+
+    private Optional<GroupChatUser> getGroupChatUser(GroupChat chat, AccountInfo user) {
+        return groupChatUserRepository.findByGroupChatAndUser(chat, user);
+    }
+
+    private List<GroupChatUser> mapToGroupChatUser(List<AccountInfo> users, GroupChat groupChat) {
+        return users.stream()
+                .map(user -> new GroupChatUser(groupChat, user))
+                .collect(Collectors.toList());
     }
 }

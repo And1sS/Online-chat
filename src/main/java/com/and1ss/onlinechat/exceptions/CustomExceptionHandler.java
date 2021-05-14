@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.NoSuchElementException;
 
 @ControllerAdvice
 @RestController
@@ -31,6 +32,15 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
                 ex.getMessage()
         );
         return new ResponseEntity(exceptionResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public final ResponseEntity<Object> handleNoSuchElementException() {
+        ApiError exceptionResponse = new ApiError(
+                Timestamp.from(Instant.now()),
+                "No such element"
+        );
+        return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(InvalidRegisterDataException.class)

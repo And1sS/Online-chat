@@ -1,10 +1,10 @@
-package com.and1ss.onlinechat.domain;
+package com.and1ss.onlinechat.services.dto;
 
 import lombok.*;
 
 @Data
 @AllArgsConstructor
-public class LoginInfo {
+public class LoginInfoDTO {
     @NonNull
     @Setter(AccessLevel.NONE)
     private final String login;
